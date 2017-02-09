@@ -19,3 +19,4 @@ for prod in pList:
         matching[k].clear()
     k += 1
 print(matching)
+
