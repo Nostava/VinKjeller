@@ -1,0 +1,253 @@
+[
+  {
+    "id": "gt",
+    "nameKey": "recipe.gt",
+    "glass": "glass.glass",
+    "ingredients": [
+      { "nameKey": "ing.gin", "keywords": ["gin"], "cl": 5, "optional": false },
+      { "nameKey": "ing.tonic", "keywords": ["tonic"], "cl": 20, "optional": false }
+    ]
+  },
+  {
+    "id": "gin-fizz",
+    "nameKey": "recipe.gin-fizz",
+    "glass": "glass.tall",
+    "ingredients": [
+      { "nameKey": "ing.gin", "keywords": ["gin"], "cl": 5, "optional": false },
+      { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 2, "optional": false },
+      { "nameKey": "ing.soda", "keywords": ["sodavann", "soda", "karbonert", "club soda", "kullsyre"], "cl": 50, "optional": false }
+    ]
+  },
+  {
+    "id": "negroni",
+    "nameKey": "recipe.negroni",
+    "glass": "glass.rocks",
+    "ingredients": [
+      { "nameKey": "ing.gin", "keywords": ["gin"], "cl": 3, "optional": false },
+      { "nameKey": "ing.sweet-vermouth", "keywords": ["rød vermouth", "sweet vermouth", "rosso", "vermouth rosso"], "cl": 3, "optional": false },
+      { "nameKey": "ing.campari", "keywords": ["campari"], "cl": 3, "optional": false }
+    ]
+  },
+  {
+    "id": "negroni-sbagliato",
+    "nameKey": "recipe.negroni-sbagliato",
+    "glass": "glass.rocks",
+    "ingredients": [
+      { "nameKey": "ing.prosecco", "keywords": ["prosecco", "munnvin", "frizzante", "skumvin"], "cl": 3, "optional": false },
+      { "nameKey": "ing.sweet-vermouth", "keywords": ["rød vermouth", "sweet vermouth", "rosso", "vermouth rosso"], "cl": 3, "optional": false },
+      { "nameKey": "ing.campari", "keywords": ["campari"], "cl": 3, "optional": false }
+    ]
+  },
+  {
+    "id": "spritz",
+    "nameKey": "recipe.spritz",
+    "glass": "glass.wine",
+    "ingredients": [
+      { "nameKey": "ing.prosecco", "keywords": ["prosecco", "munnvin", "frizzante", "skumvin"], "cl": 3, "optional": false },
+      { "nameKey": "ing.aperol", "keywords": ["aperol"], "cl": 2, "optional": false },
+      { "nameKey": "ing.soda", "keywords": ["sodavann", "soda", "karbonert", "club soda", "kullsyre"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.orange-garnish", "keywords": ["appelsin", "orange"], "cl": 0, "optional": true }
+    ]
+  },
+  {
+    "id": "spritzer",
+    "nameKey": "recipe.spritzer",
+    "glass": "glass.wine",
+    "ingredients": [
+      { "nameKey": "ing.white-wine", "keywords": ["hvitvin", "white wine", "vinmo"], "cl": 5, "optional": false },
+      { "nameKey": "ing.prosecco", "keywords": ["prosecco", "munnvin", "frizzante", "skumvin"], "cl": 2, "optional": false },
+      { "nameKey": "ing.soda", "keywords": ["sodavann", "soda", "karbonert", "club soda", "kullsyre"], "cl": 2, "optional": false },
+      { "nameKey": "ing.lemon-garnish", "keywords": ["sitron", "lemon"], "cl": 0, "optional": true }
+    ]
+  },
+  {
+    "id": "espresso-martini",
+    "nameKey": "recipe.espresso-martini",
+    "glass": "glass.cocktail",
+    "ingredients": [
+      { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 3, "optional": false },
+      { "nameKey": "ing.coffee-liqueur", "keywords": ["kaffelikør", "coffee liqueur", "kahlua"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.espresso", "keywords": ["espresso", "kaffe"], "cl": 1, "optional": false }
+    ]
+  },
+  {
+    "id": "espresso-tonic",
+    "nameKey": "recipe.espresso-tonic",
+    "glass": "glass.rocks",
+    "ingredients": [
+      { "nameKey": "ing.espresso", "keywords": ["espresso", "kaffe"], "cl": 2, "optional": false },
+      { "nameKey": "ing.tonic", "keywords": ["tonic"], "cl": 2, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 2, "optional": true }
+    ]
+  },
+  {
+    "id": "sangria",
+    "nameKey": "recipe.sangria",
+    "glass": "glass.wine",
+    "ingredients": [
+      { "nameKey": "ing.red-wine", "keywords": ["rødvin", "raudvin", "red wine"], "cl": 8, "optional": false },
+      { "nameKey": "ing.orange-juice", "keywords": ["appelsinjuice", "appelsinjuis", "appelsinmost", "orange juice"], "cl": 2, "optional": false },
+      { "nameKey": "ing.cointreau", "keywords": ["cointreau", "triple sec", "orange liqueur", "apelsinlikør"], "cl": 1, "optional": false },
+      { "nameKey": "ing.brandy", "keywords": ["brandy", "kognak", "cognac"], "cl": 1, "optional": true },
+      { "nameKey": "ing.orange-garnish", "keywords": ["appelsin", "orange"], "cl": 0, "optional": true }
+    ]
+  },
+  {
+    "id": "gloeg",
+    "nameKey": "recipe.gloeg",
+    "glass": "glass.mug",
+    "ingredients": [
+      { "nameKey": "ing.red-wine", "keywords": ["rødvin", "raudvin", "red wine"], "cl": 10, "optional": false },
+      { "nameKey": "ing.port-wine", "keywords": ["portvin", "porto", "port wine"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.orange-juice", "keywords": ["appelsinjuice", "appelsinjuis", "appelsinmost", "orange juice"], "cl": 2, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "honningsirup"], "cl": 2, "optional": true },
+      { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 1, "optional": true }
+    ]
+  },
+  {
+    "id": "mule",
+    "nameKey": "recipe.mule",
+    "glass": "glass.tall",
+    "ingredients": [
+      { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 5, "optional": false },
+      { "nameKey": "ing.ginger-beer", "keywords": ["ginger beer", "gingerbeer", "ingefær"], "cl": 15, "optional": false },
+      { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 1, "optional": false }
+    ]
+  },
+  {
+    "id": "vodka-sour",
+    "nameKey": "recipe.vodka-sour",
+    "glass": "glass.rocks",
+    "ingredients": [
+      { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 5, "optional": false },
+      { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.egg-white", "keywords": ["egg"], "cl": 0, "optional": true }
+    ]
+  },
+  {
+    "id": "whiskey-sour",
+    "nameKey": "recipe.whiskey-sour",
+    "glass": "glass.rocks",
+    "ingredients": [
+      { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 5, "optional": false },
+      { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 1.5, "optional": false }
+    ]
+  },
+  {
+    "id": "old-fashioned",
+    "nameKey": "recipe.old-fashioned",
+    "glass": "glass.rocks",
+    "ingredients": [
+      { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 5, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.bitters", "keywords": ["bitters", "bitter"], "cl": 0.1, "optional": false },
+      { "nameKey": "ing.orange-garnish", "keywords": ["appelsin", "orange"], "cl": 0, "optional": true }
+    ]
+  },
+  {
+    "id": "hot-toddy",
+    "nameKey": "recipe.hot-toddy",
+    "glass": "glass.mug",
+    "ingredients": [
+      { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 4, "optional": false },
+      { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.honey", "keywords": ["honning"], "cl": 2, "optional": false }
+    ]
+  },
+  {
+    "id": "long-island",
+    "nameKey": "recipe.long-island",
+    "glass": "glass.tall",
+    "ingredients": [
+      { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.gin", "keywords": ["gin"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.tequila", "keywords": ["tequila", "tequilla"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.cointreau", "keywords": ["cointreau", "triple sec", "orange liqueur", "apelsinlikør"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.cola", "keywords": ["cola", "coca", "pepsi"], "cl": 15, "optional": false }
+    ]
+  },
+  {
+    "id": "cosmopolitan",
+    "nameKey": "recipe.cosmopolitan",
+    "glass": "glass.cocktail",
+    "ingredients": [
+      { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 3, "optional": false },
+      { "nameKey": "ing.cointreau", "keywords": ["cointreau", "triple sec", "orange liqueur", "apelsinlikør"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.cranberry-juice", "keywords": ["cranberry", "tranebær", "tranebaer"], "cl": 4, "optional": false },
+      { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 1, "optional": false }
+    ]
+  },
+  {
+    "id": "daiquiri",
+    "nameKey": "recipe.daiquiri",
+    "glass": "glass.cocktail",
+    "ingredients": [
+      { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 5, "optional": false },
+      { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 2.5, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 1.5, "optional": false }
+    ]
+  },
+  {
+    "id": "margarita",
+    "nameKey": "recipe.margarita",
+    "glass": "glass.rocks",
+    "ingredients": [
+      { "nameKey": "ing.tequila", "keywords": ["tequila", "tequilla"], "cl": 4, "optional": false },
+      { "nameKey": "ing.cointreau", "keywords": ["cointreau", "triple sec", "orange liqueur", "apelsinlikør"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 2, "optional": false }
+    ]
+  },
+  {
+    "id": "paloma",
+    "nameKey": "recipe.paloma",
+    "glass": "glass.tall",
+    "ingredients": [
+      { "nameKey": "ing.tequila", "keywords": ["tequila", "tequilla"], "cl": 4, "optional": false },
+      { "nameKey": "ing.grapefruit-soda", "keywords": ["grapefruit", "pomelo"], "cl": 10, "optional": false },
+      { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 1, "optional": false }
+    ]
+  },
+  {
+    "id": "fernet-coke",
+    "nameKey": "recipe.fernet-coke",
+    "glass": "glass.rocks",
+    "ingredients": [
+      { "nameKey": "ing.fernet", "keywords": ["fernet"], "cl": 2.5, "optional": false },
+      { "nameKey": "ing.cola", "keywords": ["cola", "coca", "pepsi"], "cl": 10, "optional": false }
+    ]
+  },
+  {
+    "id": "whiskey-cider",
+    "nameKey": "recipe.whiskey-cider",
+    "glass": "glass.mug",
+    "ingredients": [
+      { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 3, "optional": false },
+      { "nameKey": "ing.cider", "keywords": ["eplemost", "cider", "eplevin"], "cl": 25, "optional": false }
+    ]
+  },
+  {
+    "id": "mojito",
+    "nameKey": "recipe.mojito",
+    "glass": "glass.tall",
+    "ingredients": [
+      { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 4, "optional": false },
+      { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 3, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 2, "optional": false },
+      { "nameKey": "ing.soda", "keywords": ["sodavann", "soda", "karbonert", "club soda", "kullsyre"], "cl": 50, "optional": false },
+      { "nameKey": "ing.mint", "keywords": ["mynte", "mint"], "cl": 0, "optional": true }
+    ]
+  },
+  {
+    "id": "aquavit-glass",
+    "nameKey": "recipe.aquavit-glass",
+    "glass": "glass.shots",
+    "ingredients": [
+      { "nameKey": "ing.aquavit", "keywords": ["akvavit", "aquavit", "aquadente"], "cl": 4, "optional": false }
+    ]
+  }
+]

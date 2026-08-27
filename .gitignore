@@ -1,0 +1,18 @@
+.env
+node_modules/
+dist/
+*.log
+.DS_Store
+
+# Vinmonopol API-dokumentasjon — konfidensiell ifølge deres ToS (v01.09.2024),
+# «APIs or documentation that are not made generally available ... are confidential».
+# Holdes lokalt, IKKE i GitHub.
+*.yaml
+
+# SQLite-database
+# (recipes.json er del av koden og skal IKKE ignoreres)
+data/*.db
+data/*.db-*
+
+# TypeScript build-info
+*.tsbuildinfo

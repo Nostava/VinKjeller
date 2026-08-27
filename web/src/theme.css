@@ -1,0 +1,87 @@
+/* VinKjeller theme — overrides Designsystemet's "accent" role (borgund).
+   Unlayered CSS beats the design system's @layer'd theme tokens. */
+
+:root,
+[data-color-scheme='light'] {
+  --ds-color-accent-background-default: #ffffff;
+  --ds-color-accent-background-tinted: #f8eef2;
+  --ds-color-accent-surface-default: #ffffff;
+  --ds-color-accent-surface-tinted: #f0dee6;
+  --ds-color-accent-surface-hover: #e6c9d6;
+  --ds-color-accent-surface-active: #d9b1c3;
+  --ds-color-accent-border-subtle: #c993ab;
+  --ds-color-accent-border-default: #94405f;
+  --ds-color-accent-border-strong: #6d1a36;
+  --ds-color-accent-text-subtle: #6d1a36;
+  --ds-color-accent-text-default: #40101f;
+  --ds-color-accent-base-default: #7c2244;
+  --ds-color-accent-base-hover: #68193a;
+  --ds-color-accent-base-active: #54122e;
+  --ds-color-accent-base-contrast-subtle: #f3e3e9;
+  --ds-color-accent-base-contrast-default: #ffffff;
+  --ds-link-color-visited: #6d1a36;
+}
+
+[data-color-scheme='dark'] {
+  --ds-color-accent-background-default: #1a1114;
+  --ds-color-accent-background-tinted: #24171c;
+  --ds-color-accent-surface-default: #2a1a20;
+  --ds-color-accent-surface-tinted: #33212a;
+  --ds-color-accent-surface-hover: #3d2833;
+  --ds-color-accent-surface-active: #4a303d;
+  --ds-color-accent-border-subtle: #5d3d4c;
+  --ds-color-accent-border-default: #a25c78;
+  --ds-color-accent-border-strong: #cb90ab;
+  --ds-color-accent-text-subtle: #cb90ab;
+  --ds-color-accent-text-default: #f2e6ea;
+  --ds-color-accent-base-default: #b4587a;
+  --ds-color-accent-base-hover: #c97492;
+  --ds-color-accent-base-active: #d98fa9;
+  --ds-color-accent-base-contrast-subtle: #2a171d;
+  --ds-color-accent-base-contrast-default: #1a0d10;
+  --ds-link-color-visited: #cb90ab;
+}
+
+@media (prefers-color-scheme: light) {
+  [data-color-scheme='auto'] {
+    --ds-color-accent-background-default: #ffffff;
+    --ds-color-accent-background-tinted: #f8eef2;
+    --ds-color-accent-surface-default: #ffffff;
+    --ds-color-accent-surface-tinted: #f0dee6;
+    --ds-color-accent-surface-hover: #e6c9d6;
+    --ds-color-accent-surface-active: #d9b1c3;
+    --ds-color-accent-border-subtle: #c993ab;
+    --ds-color-accent-border-default: #94405f;
+    --ds-color-accent-border-strong: #6d1a36;
+    --ds-color-accent-text-subtle: #6d1a36;
+    --ds-color-accent-text-default: #40101f;
+    --ds-color-accent-base-default: #7c2244;
+    --ds-color-accent-base-hover: #68193a;
+    --ds-color-accent-base-active: #54122e;
+    --ds-color-accent-base-contrast-subtle: #f3e3e9;
+    --ds-color-accent-base-contrast-default: #ffffff;
+    --ds-link-color-visited: #6d1a36;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-color-scheme='auto'] {
+    --ds-color-accent-background-default: #1a1114;
+    --ds-color-accent-background-tinted: #24171c;
+    --ds-color-accent-surface-default: #2a1a20;
+    --ds-color-accent-surface-tinted: #33212a;
+    --ds-color-accent-surface-hover: #3d2833;
+    --ds-color-accent-surface-active: #4a303d;
+    --ds-color-accent-border-subtle: #5d3d4c;
+    --ds-color-accent-border-default: #a25c78;
+    --ds-color-accent-border-strong: #cb90ab;
+    --ds-color-accent-text-subtle: #cb90ab;
+    --ds-color-accent-text-default: #f2e6ea;
+    --ds-color-accent-base-default: #b4587a;
+    --ds-color-accent-base-hover: #c97492;
+    --ds-color-accent-base-active: #d98fa9;
+    --ds-color-accent-base-contrast-subtle: #2a171d;
+    --ds-color-accent-base-contrast-default: #1a0d10;
+    --ds-link-color-visited: #cb90ab;
+  }
+}

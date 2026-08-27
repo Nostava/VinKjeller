@@ -1,0 +1,15 @@
+services:
+  vinkjeller:
+    build: .
+    container_name: vinkjeller
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+      - SERVE_WEB=true
+      - DB_FILE=/app/data/vinkjeller.db
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./data:/app/data
