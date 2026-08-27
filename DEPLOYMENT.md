@@ -14,18 +14,20 @@ Add both to DNS (A record → server IP) before the first Caddy reload.
 
 ## 1. Get the code onto the server (git — first time)
 
-First push from your PC (create a **private** GitHub repo, e.g. `harsku/vinkjeller`):
+Repo: **`git@github.com:Nostava/VinKjeller.git`** — app-koden ligger på branchen **`main`**
+(`master`/`Dev` inneholder det gamle Python-prototypen «Vinskap» — beholdes som referanse).
+
+Fra PC:
 
 ```powershell
-git remote add origin git@github.com:<din-github-bruker>/vinkjeller.git
-git push -u origin main
+git push        # remote "origin" er allerede satt opp
 ```
 
-Then on the server:
+På serveren (første gang):
 
 ```bash
 ssh user@www.harsku.no
-git clone git@github.com:<din-github-bruker>/vinkjeller.git ~/vinkjeller
+git clone -b main git@github.com:Nostava/VinKjeller.git ~/vinkjeller
 cd ~/vinkjeller
 ```
 
@@ -78,6 +80,9 @@ sudo caddy reload
 
 Open `https://vinkjeller.harsku.no` → register an account → install the PWA
 from the browser menu (Add to home screen).
+
+> Tip: Sett `main` som default-branch på GitHub (Settings → Branches), så slipper
+> du å tenke på branch-navn.
 
 ## Maintenance
 
