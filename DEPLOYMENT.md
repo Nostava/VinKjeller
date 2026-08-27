@@ -12,17 +12,29 @@ Port **3001** (3000 is taken by DnD-Scheduler).
 
 Add both to DNS (A record → server IP) before the first Caddy reload.
 
-## 1. Copy files to the server
+## 1. Get the code onto the server (git — first time)
 
-From Windows (PowerShell):
+First push from your PC (create a **private** GitHub repo, e.g. `harsku/vinkjeller`):
 
 ```powershell
-scp -r D:\Projects\VinKjeller\* user@www.harsku.no:~/vinkjeller/
+git remote add origin git@github.com:<din-github-bruker>/vinkjeller.git
+git push -u origin main
 ```
 
-(`node_modules`, `dist` and `.env` are excluded by your scp/ignore rules —
-the Docker build reinstalls deps, and `.env` is created on the server below.
-If in doubt, copy `.env` explicitly afterwards — it must NOT go to GitHub.)
+Then on the server:
+
+```bash
+ssh user@www.harsku.no
+git clone git@github.com:<din-github-bruker>/vinkjeller.git ~/vinkjeller
+cd ~/vinkjeller
+```
+
+(SSH-keys: make sure the server has a key that GitHub accepts — same setup as
+DnD-Scheduler. Fallback: `scp -r D:\Projects\VinKjeller\* user@www.harsku.no:~/vinkjeller/`
+from your PC — the Docker build reinstalls deps either way.)
+
+> `.env` is **not** in git (contains the API key) — it's created on the server
+> in the next step.
 
 ## 2. Configure environment on the server
 
@@ -70,9 +82,17 @@ from the browser menu (Add to home screen).
 ## Maintenance
 
 ```bash
+# PC: commit + push
+git add -A && git commit -m "…" && git push
+
+# server:
 cd ~/vinkjeller
+git pull
+docker compose build --no-cache && docker compose up -d
+```
+
+```bash
 docker compose logs -f          # logs
-docker compose build --no-cache && docker compose up -d   # update
 ```
 
 The SQLite DB is at `~/vinkjeller/data/vinkjeller.db` on the host
