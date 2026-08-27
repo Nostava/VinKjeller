@@ -53,6 +53,12 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
 - Butikksynk fra stores v0 (356 butikker med GPS + åpningstider).
 - `tsc --noEmit` ✅, `vite build` ✅ (PWA manifest + service worker), server + PWA servert fra én port.
 
+## [0.1.0-deploy] — 2026-08-27
+
+### Done
+- **Oppe i produksjon** på `https://vinkjeller.harsku.no` (+ alias `https://v.harsku.no`) —
+  Docker på harsku.no, Caddy (auto-HTTPS), port 3001. Verifisert: API, PWA-manifest,
+  service worker og app-HTML på begge subdomainene.
+
 ## [Unreleased]
-- Deploy til harsku.no (Caddy, `vinkjeller.harsku.no` / `v.harsku.no`).
 - Eventuelt: søk hos Vinmonopol om tilgang til my-products v1 → `PRODUCT_DATA_MODE=rich` (strekkoder + full data).
