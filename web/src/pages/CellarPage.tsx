@@ -6,12 +6,13 @@ import {
 import { Input } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import type { CellarItem, Product } from '../types';
-import { BottleThumb, CustomItemForm, ProductFacts, useDebounce } from '../components/ui';
+import { BottleThumb, CustomItemForm, ProductFacts, StockLine, useDebounce } from '../components/ui';
 
 type SortKey = 'recent' | 'shelf' | 'name' | 'price';
 
-export default function CellarPage({ items, onRefresh, showToast, goScan }: {
+export default function CellarPage({ items, storeId, onRefresh, showToast, goScan }: {
   items: CellarItem[];
+  storeId: string | null;
   onRefresh: () => Promise<void>;
   showToast: (m: string) => void;
   goScan: () => void;
@@ -101,6 +102,7 @@ export default function CellarPage({ items, onRefresh, showToast, goScan }: {
         <Dialog open onClose={() => setSelected(null)}>
           <BottleDialog
             item={selected}
+            storeId={storeId}
             onClose={() => setSelected(null)}
             onTakenOut={async (reason) => {
               await api.removeBottle(selected.id, reason);
@@ -279,8 +281,9 @@ function AddDialog({ onClose, onDone, showToast }: { onClose: () => void; onDone
   );
 }
 
-function BottleDialog({ item, onClose, onTakenOut }: {
+function BottleDialog({ item, storeId, onClose, onTakenOut }: {
   item: CellarItem;
+  storeId: string | null;
   onClose: () => void;
   onTakenOut: (reason: string) => void;
 }) {
@@ -309,7 +312,10 @@ function BottleDialog({ item, onClose, onTakenOut }: {
 
       <div className="mt">
         {item.product ? (
-          <ProductFacts product={item.product} />
+          <>
+            <ProductFacts product={item.product} />
+            <StockLine productId={item.product.vmProductId} storeId={storeId} />
+          </>
         ) : (
           <>
             {item.customAbv !== null && <div className="ing-row"><span className="muted">{t('bottle.abv')}</span><strong>{item.customAbv}%</strong></div>}

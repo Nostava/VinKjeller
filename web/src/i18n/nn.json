@@ -107,6 +107,13 @@
     "note": "Merknad",
     "save": "Lagre"
   },
+  "stock": {
+    "pick_store": "Vel din butikk i innstillingane for å sjå lager",
+    "unavailable": "Lager i butikk krev full Vinmonopol-tilgang",
+    "at_store_one": "{{count}} stk hos {{store}}",
+    "at_store_other": "{{count}} stk hos {{store}}",
+    "none": "Ikkje på lager hos {{store}}"
+  },
   "settings": {
     "title": "Innstillingar",
     "profile": "Profil",
@@ -117,6 +124,7 @@
     "theme_light": "Lyst",
     "theme_dark": "Mørkt",
     "store": "Butikk",
+    "store_search": "Søk butikk (namn eller by)…",
     "store_none": "Ingen",
     "store_soon": "velgast snart",
     "data": "Data",

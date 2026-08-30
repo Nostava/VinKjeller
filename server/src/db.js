@@ -128,7 +128,9 @@ export const users = {
   create: db.prepare(`INSERT INTO users (id, email, passHash, name, lang) VALUES (?,?,?,?,?)`),
   byEmail: db.prepare(`SELECT * FROM users WHERE email = ?`),
   byId: db.prepare(`SELECT * FROM users WHERE id = ?`),
-  update: db.prepare(`UPDATE users SET name = COALESCE(?,name), lang = COALESCE(?,lang), storeId = COALESCE(?,storeId) WHERE id = ?`),
+  update: db.prepare(`UPDATE users SET name = COALESCE(?,name), lang = COALESCE(?,lang) WHERE id = ?`),
+  // Explicit storeId set (null clears) — COALESCE can't express that.
+  setStore: db.prepare(`UPDATE users SET storeId = ? WHERE id = ?`),
 };
 
 export const sessions = {

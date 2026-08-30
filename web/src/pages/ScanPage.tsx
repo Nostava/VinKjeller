@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Button, Dialog, Heading, Input } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import type { CellarItem, Product } from '../types';
-import { BottleThumb, CustomItemForm, ProductFacts } from '../components/ui';
+import { BottleThumb, CustomItemForm, ProductFacts, StockLine } from '../components/ui';
 
-export default function ScanPage({ items, onRefresh, showToast }: {
+export default function ScanPage({ items, storeId, onRefresh, showToast }: {
   items: CellarItem[];
+  storeId: string | null;
   onRefresh: () => Promise<void>;
   showToast: (m: string) => void;
 }) {
@@ -214,7 +215,10 @@ export default function ScanPage({ items, onRefresh, showToast }: {
                   <span className="muted">{result.product.subCategory ?? result.product.category}</span>
                 </div>
               </div>
-              <div className="mt"><ProductFacts product={result.product} /></div>
+              <div className="mt">
+                <ProductFacts product={result.product} />
+                <StockLine productId={result.product.vmProductId} storeId={storeId} />
+              </div>
               <div className="mt row" style={{ flexWrap: 'wrap' }}>
                 {qtyStepper}
                 <Button variant="primary" onClick={addProduct}>＋ {t('scan.add')}{qty > 1 ? ` ×${qty}` : ''}</Button>

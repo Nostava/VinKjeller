@@ -2,7 +2,7 @@ import { hashPassword, verifyPassword, newToken, uid } from './auth.js';
 import {
   db, users, sessions, cellar, recipesDb, roundsDb, storesCache, gtinMap, productsCache, now, purgeVinmonopolData,
 } from './db.js';
-import { searchProducts, getProduct, getPopular, byGtin, normalizeGtin, gtinCheckOk, runDailyJob } from './vinmonopol.js';
+import { searchProducts, getProduct, getPopular, byGtin, normalizeGtin, gtinCheckOk, stockAt, runDailyJob } from './vinmonopol.js';
 import seedRecipesJson from '../../data/recipes.json' with { type: 'json' };
 const seedRecipes = seedRecipesJson;
 
@@ -71,8 +71,15 @@ export function registerRoutes(app) {
 
   app.patch('/api/me', async (req, reply) => {
     const u = requireUser(req, reply); if (!u) return;
-    const { name, lang, storeId } = req.body ?? {};
-    users.update.run(name ?? null, lang ?? null, storeId ?? null, u.id);
+    const b = req.body ?? {};
+    if (b.name !== undefined || b.lang !== undefined) {
+      users.update.run(
+        b.name !== undefined ? String(b.name) : null,
+        b.lang !== undefined ? String(b.lang) : null,
+        u.id
+      );
+    }
+    if ('storeId' in b) users.setStore.run(b.storeId ? String(b.storeId) : null, u.id);
     const fresh = users.byId.get(u.id);
     reply.send({ id: fresh.id, email: fresh.email, name: fresh.name, lang: fresh.lang, storeId: fresh.storeId });
   });
@@ -132,6 +139,22 @@ export function registerRoutes(app) {
     if (!gtinCheckOk(gtin) || !id) return reply.code(400).send({ error: 'bad_request' });
     gtinMap.upsert.run(gtin, id, now());
     reply.send({ ok: true, gtin });
+  });
+
+  // Live stock for a product in a store (my-products v1). Gracefully degrades
+  // to "unavailable" in thin mode / without my-products subscription.
+  app.get('/api/products/stock', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    const productId = String(req.query.productId ?? '').replace(/\D/g, '');
+    const storeId = String(req.query.storeId ?? '').replace(/\D/g, '');
+    if (!productId || !storeId) return reply.code(400).send({ error: 'bad_request' });
+    const storeName = storesCache.byId.get(storeId)?.name ?? null;
+    try {
+      const r = await stockAt(productId, storeId);
+      reply.send({ productId, storeId, storeName, stock: r.stock, at: r.at, available: r.available, mode: app.cfg.productMode });
+    } catch {
+      reply.send({ productId, storeId, storeName, stock: null, at: null, available: false, mode: app.cfg.productMode, reason: 'stock_unavailable' });
+    }
   });
 
   app.get('/api/products/:id', async (req, reply) => {

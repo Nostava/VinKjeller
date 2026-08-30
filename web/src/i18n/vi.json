@@ -103,6 +103,13 @@
     "note": "Ghi chú",
     "save": "Lưu"
   },
+  "stock": {
+    "pick_store": "Chọn cửa hàng của bạn trong Cài đặt để xem tồn kho",
+    "unavailable": "Tồn kho cửa hàng cần quyền truy cập đầy đủ Vinmonopol",
+    "at_store_one": "Tồn kho tại {{store}}: {{count}}",
+    "at_store_other": "Tồn kho tại {{store}}: {{count}}",
+    "none": "Hết hàng tại {{store}}"
+  },
   "settings": {
     "title": "Cài đặt",
     "profile": "Hồ sơ",
@@ -113,6 +120,7 @@
     "theme_light": "Sáng",
     "theme_dark": "Tối",
     "store": "Cửa hàng",
+    "store_search": "Tìm cửa hàng (tên hoặc thành phố)…",
     "store_none": "Không",
     "store_soon": "sắp có",
     "data": "Dữ liệu",

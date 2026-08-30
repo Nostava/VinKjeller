@@ -184,6 +184,33 @@ export async function byGtin(gtin) {
   return productByGtin(gtin);
 }
 
+// ---------- stock (my-products v1 — "lights up" in rich mode) ----------
+const stockCache = new Map(); // "productId:storeId" -> { at, stock }, 5 min
+
+export async function stockAt(productId, storeId) {
+  if (config.productMode !== 'rich') return { stock: null, at: null, available: false };
+  const key = productId + ':' + storeId;
+  const hit = stockCache.get(key);
+  if (hit && Date.now() - hit.at < 5 * 60000) {
+    return { stock: hit.stock, at: new Date(hit.at).toISOString(), available: true };
+  }
+  try {
+    const rows = await vmFetch('/my-products/v1/online-stock', { productId, storeId });
+    const entry = (rows?.[0]?.stock ?? []).find((s) => String(s.storeId) === String(storeId));
+    const stock = Number(entry?.storeStock ?? 0);
+    stockCache.set(key, { at: Date.now(), stock });
+    if (stockCache.size > 400) {
+      let oldest = key, oldestAt = Infinity;
+      for (const [k, v] of stockCache) if (v.at < oldestAt) { oldestAt = v.at; oldest = k; }
+      stockCache.delete(oldest);
+    }
+    return { stock, at: new Date().toISOString(), available: true };
+  } catch (e) {
+    if (hit) return { stock: hit.stock, at: new Date(hit.at).toISOString(), available: true }; // stale beats nothing
+    throw e;
+  }
+}
+
 export async function getPopular(ids) {
   const out = [];
   for (const id of ids) {

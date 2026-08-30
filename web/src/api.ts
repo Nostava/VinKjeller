@@ -60,6 +60,10 @@ export const api = {
   addRound: (recipeId: string, consumed: { cellarItemId: string; cl: number }[]) =>
     req<{ id: string }>('/api/me/rounds', { method: 'POST', body: JSON.stringify({ recipeId, consumed }) }),
 
+  stock: (productId: string, storeId: string) =>
+    req<{ productId: string; storeId: string; storeName: string | null; stock: number | null; at: string | null; available: boolean; mode: string; reason?: string }>(
+      `/api/products/stock?productId=${encodeURIComponent(productId)}&storeId=${encodeURIComponent(storeId)}`),
+
   stores: () => req<{ stores: { storeId: string; name: string; city: string }[] }>('/api/stores'),
   purge: () => req<{ ok: boolean; deleted: Record<string, number> }>('/api/purge-vinmonopol', { method: 'POST' }),
 };

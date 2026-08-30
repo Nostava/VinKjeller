@@ -71,9 +71,9 @@ export default function App() {
         <span className="muted">{user.name ?? user.email}</span>
       </header>
       <main className="app-main">
-        {tab === 'cellar' && <CellarPage items={items} onRefresh={refresh} showToast={showToast} goScan={() => setTab('scan')} />}
+        {tab === 'cellar' && <CellarPage items={items} storeId={user.storeId} onRefresh={refresh} showToast={showToast} goScan={() => setTab('scan')} />}
         {tab === 'drinks' && <DrinksPage items={items} recipes={recipes} rounds={rounds} onRefresh={refresh} showToast={showToast} />}
-        {tab === 'scan' && <ScanPage items={items} onRefresh={refresh} showToast={showToast} />}
+        {tab === 'scan' && <ScanPage items={items} storeId={user.storeId} onRefresh={refresh} showToast={showToast} />}
         {tab === 'settings' && <SettingsPage user={user} onLogout={() => setUser(null)} showToast={showToast} onSaved={(u) => setUser(u)} />}
       </main>
       <nav className="bottom-nav">

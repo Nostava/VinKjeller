@@ -62,6 +62,7 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
 
 ## [Unreleased]
 ### Added
+- **Lager i butikk** — «🏬 N stk hos <butikk>» på produktkortet i Skann og i flaske-detall i kjelleren, fra `online-stock` (my-products v1, 5 min-mellomslag server-side). Krever at du har valgt butikk i Innstillinger (nytt søkbart butikkvelger — 356 butikker fra stores v0). I `thin`-modus/uten my-products-abonnement viser det «Lager i butikk krever full Vinmonopol-tilgang» — og lyser opp automatisk i rich-modus.
 - **Mange flasker på én gang** — antallsvelger (1–99) når du legger til et produkt fra Skann-siden eller «Legg til» i kjelleren (f.eks. 6ere). Én handling = N fysiske flasker, hver med sin «time on the shelf». `POST /api/me/cellar` godtar `qty`.
 - **Skann-siden skjelner nå mellom «finnes ikke» og «strekkodesøk utilgjengelig»**: `GET /api/products/by-gtin/:gtin` returnerer `reason` (`bad_gtin` / `gtin_unavailable` / `not_found`). I `thin`-modus (ingen my-products v1) viser Skann-siden en tydelig melding om at strekkodesøk krever full Vinmonopol-tilgang — med peiling mot navnssøk/produktnummer — i stedet for å si at produktet finnes ikke. Kort kode (< 2 tegn) avvises med toast.
 - **Lært strekkode-tilkobling** (`gtin_map`): når en strekkode er knyttet til et produkt (automatisk i rich-modus fra produktets barcode-liste, eller manuelt via den nye «💾 Lagre strekkoden»-knappen på skann-resultatet), fungerer scann av den flasken videre **uten API-kall — også i thin-modus**. Ny endpoint: `POST /api/products/remember-gtin`.

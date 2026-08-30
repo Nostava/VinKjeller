@@ -141,3 +141,32 @@ export function ProductFacts({ product }: { product: Product }) {
 export function Heading3({ children }: { children: React.ReactNode }) {
   return <Heading level={3} data-size="md">{children}</Heading>;
 }
+
+/** "Lager i butikk" line — live stock (my-products v1). Graceful hints in thin mode. */
+export function StockLine({ productId, storeId }: { productId: string; storeId: string | null }) {
+  const { t } = useTranslation();
+  const [data, setData] = useState<{ stock: number | null; storeName: string | null; available: boolean } | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!productId || !storeId) { setData(null); setFailed(false); return; }
+    let on = true;
+    setFailed(false);
+    api.stock(productId, storeId)
+      .then((r) => { if (on) setData({ stock: r.stock, storeName: r.storeName, available: r.available }); })
+      .catch(() => { if (on) setFailed(true); });
+    return () => { on = false; };
+  }, [productId, storeId]);
+
+  if (!productId) return null;
+  if (!storeId) return <div className="ing-row"><span className="muted">🏬 {t('stock.pick_store')}</span></div>;
+  if (failed || !data) return <div className="ing-row"><span className="muted">🏬 …</span></div>;
+  if (!data.available || data.stock === null) return <div className="ing-row"><span className="muted">🏬 {t('stock.unavailable')}</span></div>;
+  const store = data.storeName ?? '';
+  return (
+    <div className="ing-row">
+      <span className="muted">🏬</span>
+      <strong>{data.stock > 0 ? t('stock.at_store', { count: data.stock, store }) : t('stock.none', { store })}</strong>
+    </div>
+  );
+}

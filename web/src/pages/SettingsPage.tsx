@@ -15,6 +15,8 @@ export default function SettingsPage({ user, onLogout, showToast, onSaved }: {
   const [name, setName] = useState(user.name ?? '');
   const [lang, setLangState] = useState(i18n.language.slice(0, 2));
   const [theme, setThemeState] = useState(localStorage.getItem('vk_theme') ?? 'auto');
+  const [storeId, setStoreId] = useState(user.storeId ?? '');
+  const [storeQ, setStoreQ] = useState('');
   const [stores, setStores] = useState<{ storeId: string; name: string; city: string }[]>([]);
   const [confirmPurge, setConfirmPurge] = useState(false);
   const [purging, setPurging] = useState(false);
@@ -39,13 +41,18 @@ export default function SettingsPage({ user, onLogout, showToast, onSaved }: {
   async function saveName(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const u = await api.updateMe({ name: name.trim() || undefined });
+      const u = await api.updateMe({ name: name.trim() || undefined, storeId: storeId || null });
       onSaved(u);
       showToast(t('settings.saved'));
     } catch (ex) {
       showToast(ex instanceof Error ? ex.message : t('common.error'));
     }
   }
+
+  const q = storeQ.trim().toLowerCase();
+  const visibleStores = q
+    ? stores.filter((s) => (s.name + ' ' + s.city).toLowerCase().includes(q))
+    : stores;
 
   return (
     <div>
@@ -87,9 +94,10 @@ export default function SettingsPage({ user, onLogout, showToast, onSaved }: {
           </div>
           <div>
             <Label htmlFor="s-store">{t('settings.store')}</Label>
-            <Select id="s-store" value={user.storeId ?? ''} disabled>
-              <option value="">{t('settings.store_none')} ({t('settings.store_soon')})</option>
-              {stores.map((s) => (
+            <Input id="s-store-q" value={storeQ} onChange={(e) => setStoreQ(e.target.value)} placeholder={t('settings.store_search')} style={{ marginBottom: 8 }} />
+            <Select id="s-store" value={storeId} onChange={(e) => setStoreId(e.target.value)}>
+              <option value="">{t('settings.store_none')}</option>
+              {visibleStores.map((s) => (
                 <option key={s.storeId} value={s.storeId}>{s.name}, {s.city}</option>
               ))}
             </Select>

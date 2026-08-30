@@ -107,6 +107,13 @@
     "note": "Note",
     "save": "Save"
   },
+  "stock": {
+    "pick_store": "Pick your store in settings to see stock",
+    "unavailable": "Store stock requires full Vinmonopol access",
+    "at_store_one": "In stock at {{store}}: {{count}}",
+    "at_store_other": "In stock at {{store}}: {{count}}",
+    "none": "Not in stock at {{store}}"
+  },
   "settings": {
     "title": "Settings",
     "profile": "Profile",
@@ -117,6 +124,7 @@
     "theme_light": "Light",
     "theme_dark": "Dark",
     "store": "Store",
+    "store_search": "Search store (name or city)…",
     "store_none": "None",
     "store_soon": "coming soon",
     "data": "Data",
