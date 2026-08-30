@@ -188,22 +188,28 @@ export function registerRoutes(app) {
     const source = b.source === 'custom' ? 'custom' : 'vm';
     if (source === 'vm' && !b.vmProductId) return reply.code(400).send({ error: 'bad_request' });
     if (source === 'custom' && !b.customName) return reply.code(400).send({ error: 'bad_request' });
-    const id = uid();
-    cellar.insert.run(
-      id, u.id, source,
-      source === 'vm' ? String(b.vmProductId) : null,
-      source === 'custom' ? String(b.customName).slice(0, 120) : null,
-      b.customType ? String(b.customType).slice(0, 60) : null,
-      b.customAbv !== undefined && b.customAbv !== null ? Number(b.customAbv) : null,
-      b.customVolumeCl !== undefined && b.customVolumeCl !== null ? Number(b.customVolumeCl) : null,
-      b.price !== undefined && b.price !== null ? Number(b.price) : null,
-      b.photoUrl ? String(b.photoUrl).slice(0, 300) : null,
-      b.note ? String(b.note).slice(0, 500) : null,
-      now()
-    );
+    // One add can cover several physical bottles (e.g. a 6-pack).
+    const qty = Math.min(99, Math.max(1, Math.floor(Number(b.qty ?? 1)) || 1));
+    const ids = [];
+    for (let i = 0; i < qty; i++) {
+      const id = uid();
+      cellar.insert.run(
+        id, u.id, source,
+        source === 'vm' ? String(b.vmProductId) : null,
+        source === 'custom' ? String(b.customName).slice(0, 120) : null,
+        b.customType ? String(b.customType).slice(0, 60) : null,
+        b.customAbv !== undefined && b.customAbv !== null ? Number(b.customAbv) : null,
+        b.customVolumeCl !== undefined && b.customVolumeCl !== null ? Number(b.customVolumeCl) : null,
+        b.price !== undefined && b.price !== null ? Number(b.price) : null,
+        b.photoUrl ? String(b.photoUrl).slice(0, 300) : null,
+        b.note ? String(b.note).slice(0, 500) : null,
+        now()
+      );
+      ids.push(id);
+    }
     // warm the product cache (live call, best effort) so list views have names/images
     if (source === 'vm') getProduct(String(b.vmProductId)).catch(() => {});
-    reply.code(201).send({ id });
+    reply.code(201).send({ id: ids[0], ids });
   });
 
   app.patch('/api/me/cellar/:id', async (req, reply) => {

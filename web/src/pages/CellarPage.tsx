@@ -164,6 +164,7 @@ function AddDialog({ onClose, onDone, showToast }: { onClose: () => void; onDone
   const [searching, setSearching] = useState(false);
   const [chosen, setChosen] = useState<Product | null>(null);
   const [loadingProd, setLoadingProd] = useState(false);
+  const [qty, setQty] = useState(1);
   const [mode, setMode] = useState<'search' | 'product'>('search');
 
   async function doSearch() {
@@ -182,6 +183,7 @@ function AddDialog({ onClose, onDone, showToast }: { onClose: () => void; onDone
   async function pick(prod: { vmProductId: string; name: string | null }) {
     setLoadingProd(true);
     setMode('product');
+    setQty(1);
     try {
       const res = await api.product(prod.vmProductId);
       setChosen(res.product ?? { ...prod, longName: null, category: null, subCategory: null, country: null, region: null, subRegion: null, abv: null, volumeCl: null, price: null, vintage: null, grapes: null, description: null, imageUrls: null, extra: null, fetchedAt: null });
@@ -195,7 +197,7 @@ function AddDialog({ onClose, onDone, showToast }: { onClose: () => void; onDone
   async function addVm() {
     if (!chosen) return;
     try {
-      await api.addBottle({ source: 'vm', vmProductId: chosen.vmProductId, price: chosen.price });
+      await api.addBottle({ source: 'vm', vmProductId: chosen.vmProductId, price: chosen.price, qty });
       onDone();
     } catch (e) {
       showToast(e instanceof Error ? e.message : 'Feil');
@@ -254,7 +256,14 @@ function AddDialog({ onClose, onDone, showToast }: { onClose: () => void; onDone
                     <BottleThumb item={pseudoItem(chosen)} />
                     <strong>{chosen.longName ?? chosen.name}</strong>
                     <ProductFacts product={chosen} />
-                    <Button variant="primary" onClick={addVm}>＋ {t('scan.add')}</Button>
+                    <div className="row" style={{ alignItems: 'center', gap: 8 }}>
+                      <div className="row" style={{ alignItems: 'center', gap: 4 }}>
+                        <Button variant="tertiary" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="−">−</Button>
+                        <span style={{ minWidth: 24, textAlign: 'center', fontWeight: 600 }}>{qty}</span>
+                        <Button variant="tertiary" onClick={() => setQty(Math.min(99, qty + 1))} aria-label="＋">＋</Button>
+                      </div>
+                      <Button variant="primary" onClick={addVm}>＋ {t('scan.add')}{qty > 1 ? ` ×${qty}` : ''}</Button>
+                    </div>
                   </>
                 )}
                 <Button variant="tertiary" onClick={() => { setMode('search'); setChosen(null); }}>{t('common.cancel')}</Button>

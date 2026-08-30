@@ -20,6 +20,7 @@ export default function ScanPage({ items, onRefresh, showToast }: {
   const [showCustom, setShowCustom] = useState(false);
   const [takeOutCode, setTakeOutCode] = useState<string | null>(null);
   const [remembering, setRemembering] = useState(false);
+  const [qty, setQty] = useState(1);
   const lastScan = useRef(0);
   // Last code that looked like a barcode (12–14 digits), so the user can
   // remember it for a product found by another means (name search in thin mode).
@@ -134,14 +135,22 @@ export default function ScanPage({ items, onRefresh, showToast }: {
   async function addProduct() {
     if (!result?.product) return;
     try {
-      await api.addBottle({ source: 'vm', vmProductId: result.product.vmProductId, price: result.product.price });
+      await api.addBottle({ source: 'vm', vmProductId: result.product.vmProductId, price: result.product.price, qty });
       await onRefresh();
-      showToast('✔');
+      showToast(qty > 1 ? `✔ ×${qty}` : '✔');
       setResult(null);
     } catch (e) {
       showToast(e instanceof Error ? e.message : t('common.error'));
     }
   }
+
+  const qtyStepper = (
+    <div className="row" style={{ alignItems: 'center', gap: 4 }}>
+      <Button variant="tertiary" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="−">−</Button>
+      <span style={{ minWidth: 24, textAlign: 'center', fontWeight: 600 }}>{qty}</span>
+      <Button variant="tertiary" onClick={() => setQty(Math.min(99, qty + 1))} aria-label="＋">＋</Button>
+    </div>
+  );
 
   const bottlesForResult = result?.product
     ? items.filter((it) => it.source === 'vm' && it.vmProductId === result.product!.vmProductId)
@@ -149,6 +158,9 @@ export default function ScanPage({ items, onRefresh, showToast }: {
 
   // Offer to save the scanned barcode for the found product — unless the
   // scanner already read exactly this product's own main GTIN.
+  // Reset the quantity picker when a new lookup result shows.
+  useEffect(() => { setQty(1); }, [result?.product?.vmProductId]);
+
   const knownGtin = (() => {
     if (!result?.product) return null;
     try { return (JSON.parse(result.product.extra ?? 'null') as { gtin?: string } | null)?.gtin ?? null; }
@@ -204,7 +216,8 @@ export default function ScanPage({ items, onRefresh, showToast }: {
               </div>
               <div className="mt"><ProductFacts product={result.product} /></div>
               <div className="mt row" style={{ flexWrap: 'wrap' }}>
-                <Button variant="primary" onClick={addProduct}>＋ {t('scan.add')}</Button>
+                {qtyStepper}
+                <Button variant="primary" onClick={addProduct}>＋ {t('scan.add')}{qty > 1 ? ` ×${qty}` : ''}</Button>
                 {bottlesForResult.length > 0 && (
                   <Button variant="secondary" onClick={() => setTakeOutCode(result.code)}>{t('scan.take_out')} ({bottlesForResult.length})</Button>
                 )}

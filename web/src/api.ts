@@ -31,8 +31,8 @@ export const api = {
   addBottle: (b: {
     source: 'vm' | 'custom'; vmProductId?: string | null; customName?: string | null; customType?: string | null;
     customAbv?: number | null; customVolumeCl?: number | null; price?: number | null;
-    photoUrl?: string | null; note?: string | null;
-  }) => req<{ id: string }>('/api/me/cellar', { method: 'POST', body: JSON.stringify(b) }),
+    photoUrl?: string | null; note?: string | null; qty?: number;
+  }) => req<{ id: string; ids: string[] }>('/api/me/cellar', { method: 'POST', body: JSON.stringify(b) }),
   removeBottle: (id: string, reason: string) =>
     req<{ ok: boolean }>(`/api/me/cellar/${id}`, { method: 'DELETE', body: JSON.stringify({ reason }) }),
 
