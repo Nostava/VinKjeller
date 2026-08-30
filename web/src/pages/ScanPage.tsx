@@ -16,7 +16,7 @@ export default function ScanPage({ items, onRefresh, showToast }: {
   const [cameraErr, setCameraErr] = useState(false);
   const [manual, setManual] = useState('');
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ product: Product | null; code: string } | null>(null);
+  const [result, setResult] = useState<{ product: Product | null; code: string; reason?: string } | null>(null);
   const [showCustom, setShowCustom] = useState(false);
   const [takeOutCode, setTakeOutCode] = useState<string | null>(null);
   const lastScan = useRef(0);
@@ -95,12 +95,18 @@ export default function ScanPage({ items, onRefresh, showToast }: {
   async function lookup(code: string) {
     const c = code.trim();
     if (!c) return;
+    if (c.length < 2) {
+      showToast(t('scan.code_too_short'));
+      return;
+    }
     setBusy(true);
     try {
       let product: Product | null = null;
+      let reason: string | undefined;
       if (/^\d{12,14}$/.test(c)) {
         const res = await api.byGtin(c);
         product = res?.product ?? null;
+        reason = res?.reason;
       } else if (/^\d{5,9}$/.test(c)) {
         const res = await api.product(c);
         product = res.product;
@@ -111,9 +117,10 @@ export default function ScanPage({ items, onRefresh, showToast }: {
           product = r.product;
         }
       }
-      setResult({ product, code: c });
+      setResult({ product, code: c, reason });
     } catch (e) {
-      showToast(e instanceof Error ? e.message : t('common.error'));
+      const msg = e instanceof Error ? e.message : t('common.error');
+      showToast(msg === 'q_too_short' ? t('scan.code_too_short') : msg);
     } finally {
       setBusy(false);
     }
@@ -192,8 +199,17 @@ export default function ScanPage({ items, onRefresh, showToast }: {
           ) : (
             <>
               <Alert data-color="warning">
-                <strong>{t('scan.not_found')}</strong> ({result.code})<br />
-                {t('scan.not_found_hint')}
+                {result.reason === 'gtin_unavailable' ? (
+                  <>
+                    <strong>{t('scan.gtin_unavailable')}</strong> ({result.code})<br />
+                    {t('scan.gtin_unavailable_hint')}
+                  </>
+                ) : (
+                  <>
+                    <strong>{t('scan.not_found')}</strong> ({result.code})<br />
+                    {t('scan.not_found_hint')}
+                  </>
+                )}
               </Alert>
               <div className="mt">
                 <Button variant="secondary" onClick={() => setShowCustom(true)}>＋ {t('scan.add_custom')}</Button>

@@ -108,12 +108,16 @@ export function registerRoutes(app) {
   app.get('/api/products/by-gtin/:gtin', async (req, reply) => {
     const u = requireUser(req, reply); if (!u) return;
     const gtin = String(req.params.gtin).replace(/\D/g, '');
-    if (gtin.length < 8) return reply.send({ product: null });
+    if (gtin.length < 8) return reply.send({ product: null, reason: 'bad_gtin' });
     try {
       const p = await byGtin(gtin);
-      reply.send({ product: p });
+      if (p) return reply.send({ product: p });
+      // thin mode (or missing my-products v1 subscription) has no official GTIN lookup,
+      // so "not found" and "lookup unavailable" must be distinguishable in the UI.
+      const reason = app.cfg.productMode === 'rich' ? 'not_found' : 'gtin_unavailable';
+      reply.send({ product: null, reason });
     } catch {
-      reply.send({ product: null });
+      reply.send({ product: null, reason: 'gtin_unavailable' });
     }
   });
 

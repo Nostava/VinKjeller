@@ -61,4 +61,6 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
   service worker og app-HTML på begge subdomainene.
 
 ## [Unreleased]
+### Added
+- **Skann-siden skjelner nå mellom «finnes ikke» og «strekkodesøk utilgjengelig»**: `GET /api/products/by-gtin/:gtin` returnerer `reason` (`bad_gtin` / `gtin_unavailable` / `not_found`). I `thin`-modus (ingen my-products v1) viser Skann-siden en tydelig melding om at strekkodesøk krever full Vinmonopol-tilgang — med peiling mot navnssøk/produktnummer — i stedet for å si at produktet finnes ikke. Kort kode (< 2 tegn) avvises med toast.
 - Eventuelt: søk hos Vinmonopol om tilgang til my-products v1 → `PRODUCT_DATA_MODE=rich` (strekkoder + full data).

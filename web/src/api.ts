@@ -37,7 +37,8 @@ export const api = {
     req<{ ok: boolean }>(`/api/me/cellar/${id}`, { method: 'DELETE', body: JSON.stringify({ reason }) }),
 
   product: (id: string) => req<{ product: Product | null; source: string }>('/api/products/' + id),
-  byGtin: (gtin: string) => req<{ product: Product | null; source: string } | null>('/api/products/by-gtin/' + gtin),
+  byGtin: (gtin: string) =>
+    req<{ product: Product | null; reason?: 'bad_gtin' | 'gtin_unavailable' | 'not_found' }>('/api/products/by-gtin/' + gtin),
   searchProducts: (q: string) =>
     req<{ items: { vmProductId: string; name: string | null }[]; mode: string }>('/api/products/search?q=' + encodeURIComponent(q)),
 
