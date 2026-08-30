@@ -1,6 +1,6 @@
 {
   "app": { "name": "VinKjeller" },
-  "nav": { "cellar": "Kjellar", "drinks": "Drikk", "scan": "Skann", "settings": "Innstillingar" },
+  "nav": { "cellar": "Kjellar", "drinks": "Drinker", "scan": "Skann", "settings": "Innstillingar" },
   "common": { "cancel": "Avbryt", "close": "Lukk", "save": "Lagre", "ok": "OK", "loading": "Lastar…", "error": "Noko gjekk gale", "search": "Søk" },
   "auth": {
     "login_title": "Logg inn",

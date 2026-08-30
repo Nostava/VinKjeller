@@ -1,6 +1,6 @@
 {
   "app": { "name": "VinKjeller" },
-  "nav": { "cellar": "Kjeller", "drinks": "Drikk", "scan": "Skann", "settings": "Innstillinger" },
+  "nav": { "cellar": "Kjeller", "drinks": "Drinker", "scan": "Skann", "settings": "Innstillinger" },
   "common": { "cancel": "Avbryt", "close": "Lukk", "save": "Lagre", "ok": "OK", "loading": "Laster…", "error": "Noe gikk galt", "search": "Søk" },
   "auth": {
     "login_title": "Logg inn",
@@ -138,7 +138,7 @@
     "purge_confirm": "Slette all cache av Vinmonopol-data? Dine egne flasker og oppskrifter beholdes.",
     "purge_done": "Slettet",
     "about": "Om",
-    "about_text": "VinKjeller er en personlig vinkjeller-app. Produktdata © Vinmonopolet. Ikke reklame — kjøp hos Vinmonopolet. Drik med ansvar (18+).",
+    "about_text": "VinKjeller er en personlig vinkjeller-app. Produktdata © Vinmonopolet. Ikke reklame — kjøp hos Vinmonopolet. Drikk med ansvar (18+).",
     "version": "Versjon",
     "saved": "Lagret",
     "logout": "Logg ut"
