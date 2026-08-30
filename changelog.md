@@ -62,6 +62,7 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
 
 ## [Unreleased]
 ### Added
+- **Søker i kjelleren** — utvidet fra fritekstsøk med strukturfiltre: kategori, land og prisintervall (fra–til), pluss «Nullstill filtrene». Alternativerne utledes fra det som faktisk er i kjelleren, så filtrene lyser opp etter hvert som produktdata tilkommer (thin-modus har ingen kategori/land/pris).
 - **Lager i butikk** — «🏬 N stk hos <butikk>» på produktkortet i Skann og i flaske-detall i kjelleren, fra `online-stock` (my-products v1, 5 min-mellomslag server-side). Krever at du har valgt butikk i Innstillinger (nytt søkbart butikkvelger — 356 butikker fra stores v0). I `thin`-modus/uten my-products-abonnement viser det «Lager i butikk krever full Vinmonopol-tilgang» — og lyser opp automatisk i rich-modus.
 - **Mange flasker på én gang** — antallsvelger (1–99) når du legger til et produkt fra Skann-siden eller «Legg til» i kjelleren (f.eks. 6ere). Én handling = N fysiske flasker, hver med sin «time on the shelf». `POST /api/me/cellar` godtar `qty`.
 - **Skann-siden skjelner nå mellom «finnes ikke» og «strekkodesøk utilgjengelig»**: `GET /api/products/by-gtin/:gtin` returnerer `reason` (`bad_gtin` / `gtin_unavailable` / `not_found`). I `thin`-modus (ingen my-products v1) viser Skann-siden en tydelig melding om at strekkodesøk krever full Vinmonopol-tilgang — med peiling mot navnssøk/produktnummer — i stedet for å si at produktet finnes ikke. Kort kode (< 2 tegn) avvises med toast.

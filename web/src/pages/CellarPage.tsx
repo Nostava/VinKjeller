@@ -19,17 +19,45 @@ export default function CellarPage({ items, storeId, onRefresh, showToast, goSca
 }) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState('');
+  const [cat, setCat] = useState('');
+  const [country, setCountry] = useState('');
+  const [pmin, setPmin] = useState('');
+  const [pmax, setPmax] = useState('');
   const [sort, setSort] = useState<SortKey>('recent');
   const [selected, setSelected] = useState<CellarItem | null>(null);
   const [showAdd, setShowAdd] = useState(false);
 
+  // Filter options derived from what's actually in the cellar (they "light up"
+  // as data becomes available — thin-mode products have no category/country).
+  const cats = useMemo(
+    () => [...new Set(items.map((i) => i.product?.category ?? (i.source === 'custom' ? i.customType : null)).filter(Boolean) as string[])]
+      .sort((a, b) => a.localeCompare(b, 'nb')),
+    [items]
+  );
+  const countries = useMemo(
+    () => [...new Set(items.map((i) => i.product?.country).filter(Boolean) as string[])]
+      .sort((a, b) => a.localeCompare(b, 'nb')),
+    [items]
+  );
+  const hasPrices = items.some((i) => i.price !== null);
+  const hasFilters = !!(cat || country || pmin || pmax);
+
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
     const list = items.filter((it) => {
-      if (!q) return true;
-      const hay = [it.customName, it.product?.name, it.product?.longName, it.product?.category, it.product?.country]
-        .filter(Boolean).join(' ').toLowerCase();
-      return hay.includes(q);
+      if (q) {
+        const hay = [it.customName, it.product?.name, it.product?.longName, it.product?.category, it.product?.country]
+          .filter(Boolean).join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (cat) {
+        const c = it.product?.category ?? (it.source === 'custom' ? it.customType : null);
+        if (c !== cat) return false;
+      }
+      if (country && it.product?.country !== country) return false;
+      if (pmin !== '' && (it.price === null || it.price < Number(pmin))) return false;
+      if (pmax !== '' && (it.price === null || it.price > Number(pmax))) return false;
+      return true;
     });
     const label = (it: CellarItem) => it.customName ?? it.product?.name ?? it.product?.longName ?? '';
     switch (sort) {
@@ -38,7 +66,7 @@ export default function CellarPage({ items, storeId, onRefresh, showToast, goSca
       case 'price': return [...list].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
       default: return [...list].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
     }
-  }, [items, filter, sort]);
+  }, [items, filter, cat, country, pmin, pmax, sort]);
 
   const totalValue = useMemo(
     () => items.reduce((s, it) => s + (it.price ?? 0), 0),
@@ -68,6 +96,33 @@ export default function CellarPage({ items, storeId, onRefresh, showToast, goSca
             <option value="name">{t('cellar.sort_name')}</option>
             <option value="price">{t('cellar.sort_price')}</option>
           </Select>
+        </div>
+      )}
+
+      {(cats.length > 0 || countries.length > 0 || hasPrices) && items.length > 0 && (
+        <div className="row mb" style={{ flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+          {cats.length > 0 && (
+            <Select value={cat} onChange={(e) => setCat(e.target.value)} aria-label={t('cellar.filter_category')} style={{ width: 'auto', maxWidth: 220 }}>
+              <option value="">{t('cellar.filter_category')}: {t('cellar.filter_all')}</option>
+              {cats.map((c) => <option key={c} value={c}>{c}</option>)}
+            </Select>
+          )}
+          {countries.length > 0 && (
+            <Select value={country} onChange={(e) => setCountry(e.target.value)} aria-label={t('cellar.filter_country')} style={{ width: 'auto', maxWidth: 220 }}>
+              <option value="">{t('cellar.filter_country')}: {t('cellar.filter_all')}</option>
+              {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+            </Select>
+          )}
+          {hasPrices && (
+            <>
+              <Input type="number" min="0" value={pmin} onChange={(e) => setPmin(e.target.value)} placeholder={t('cellar.price_min')} aria-label={t('cellar.price_min')} style={{ width: 100 }} />
+              <span className="muted">–</span>
+              <Input type="number" min="0" value={pmax} onChange={(e) => setPmax(e.target.value)} placeholder={t('cellar.price_max')} aria-label={t('cellar.price_max')} style={{ width: 100 }} />
+            </>
+          )}
+          {hasFilters && (
+            <Button variant="tertiary" onClick={() => { setCat(''); setCountry(''); setPmin(''); setPmax(''); }}>✕ {t('cellar.clear_filters')}</Button>
+          )}
         </div>
       )}
 
