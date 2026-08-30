@@ -65,7 +65,9 @@
     "add": "Add to cellar",
     "take_out": "Take out a bottle",
     "camera_err": "Camera unavailable. Use manual search.",
-    "add_custom": "Custom item"
+    "add_custom": "Custom item",
+    "remember_code": "Save this product’s barcode",
+    "remember_saved": "Barcode saved"
   },
   "drinks": {
     "title": "Drinks",

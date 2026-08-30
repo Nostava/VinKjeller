@@ -111,6 +111,14 @@ CREATE TABLE IF NOT EXISTS sync_meta (
   key TEXT PRIMARY KEY,
   value TEXT
 );
+
+-- Learned barcode→product mapping (global fact, not user data). Lets scans
+-- resolve without any API call — works in thin mode too.
+CREATE TABLE IF NOT EXISTS gtin_map (
+  gtin TEXT PRIMARY KEY,
+  vmProductId TEXT NOT NULL,
+  learnedAt TEXT NOT NULL
+);
 `);
 
 const now = () => new Date().toISOString();
@@ -165,10 +173,17 @@ export const salesCache = {
   count: db.prepare(`SELECT COUNT(*) AS n FROM sales_cache`),
 };
 
+export const gtinMap = {
+  get: db.prepare(`SELECT * FROM gtin_map WHERE gtin = ?`),
+  upsert: db.prepare(`INSERT INTO gtin_map (gtin,vmProductId,learnedAt) VALUES (?,?,?)
+    ON CONFLICT(gtin) DO UPDATE SET vmProductId=excluded.vmProductId, learnedAt=excluded.learnedAt`),
+};
+
 export const storesCache = {
   upsert: db.prepare(`INSERT INTO stores_cache (storeId,name,city,address,gps,openingHours,fetchedAt) VALUES (?,?,?,?,?,?,?)
     ON CONFLICT(storeId) DO UPDATE SET name=excluded.name, city=excluded.city, address=excluded.address, gps=excluded.gps, openingHours=excluded.openingHours, fetchedAt=excluded.fetchedAt`),
   all: db.prepare(`SELECT * FROM stores_cache ORDER BY city, name`),
+  byId: db.prepare(`SELECT * FROM stores_cache WHERE storeId = ?`),
   age: db.prepare(`SELECT MIN(fetchedAt) AS oldest FROM stores_cache`),
 };
 
@@ -196,7 +211,7 @@ export const meta = {
 
 // ---------- ToS: purge all Vinmonopol data ----------
 export function purgeVinmonopolData() {
-  db.exec(`DELETE FROM products_cache; DELETE FROM sales_cache; DELETE FROM stores_cache;
+  db.exec(`DELETE FROM products_cache; DELETE FROM sales_cache; DELETE FROM stores_cache; DELETE FROM gtin_map;
            UPDATE sync_meta SET value = NULL WHERE key IN ('sales_last_sync','stores_last_sync');`);
 }
 

@@ -39,6 +39,8 @@ export const api = {
   product: (id: string) => req<{ product: Product | null; source: string }>('/api/products/' + id),
   byGtin: (gtin: string) =>
     req<{ product: Product | null; reason?: 'bad_gtin' | 'gtin_unavailable' | 'not_found' }>('/api/products/by-gtin/' + gtin),
+  rememberGtin: (gtin: string, vmProductId: string) =>
+    req<{ ok: boolean; gtin: string }>('/api/products/remember-gtin', { method: 'POST', body: JSON.stringify({ gtin, vmProductId }) }),
   searchProducts: (q: string) =>
     req<{ items: { vmProductId: string; name: string | null }[]; mode: string }>('/api/products/search?q=' + encodeURIComponent(q)),
 

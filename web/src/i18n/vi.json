@@ -64,7 +64,9 @@
     "add": "Thêm vào hầm rượu",
     "take_out": "Lấy ra một chai",
     "camera_err": "Không truy cập được camera. Dùng tìm thủ công.",
-    "add_custom": "Sản phẩm riêng"
+    "add_custom": "Sản phẩm riêng",
+    "remember_code": "Lưu mã vạch cho sản phẩm này",
+    "remember_saved": "Đã lưu mã vạch"
   },
   "drinks": {
     "title": "Đồ uống",

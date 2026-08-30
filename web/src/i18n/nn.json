@@ -65,7 +65,9 @@
     "add": "Legg i kjellaren",
     "take_out": "Ta ut ein flaske",
     "camera_err": "Kameraet er ikkje tilgjengeleg. Bruk manuell søk.",
-    "add_custom": "Eigen vare"
+    "add_custom": "Eigen vare",
+    "remember_code": "Lagre strekkoda for dette produktet",
+    "remember_saved": "Strekkoda er lagra"
   },
   "drinks": {
     "title": "Drikk",

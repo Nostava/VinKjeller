@@ -1,5 +1,5 @@
 import { config } from './config.js';
-import { productsCache, salesCache, storesCache, meta, now } from './db.js';
+import { productsCache, salesCache, storesCache, gtinMap, meta, now } from './db.js';
 
 const BASE = 'https://apis.vinmonopolet.no';
 const UA = 'VinKjeller/0.1 (personal cellar tracker)';
@@ -75,11 +75,44 @@ async function productRich(id) {
   return rows.length ? normalizeRich(rows[0]) : null;
 }
 
-async function productByGtin(gtin) {
-  const clean = String(gtin).replace(/\D/g, '');
+const GTIN_LENS = new Set([8, 12, 13, 14]);
+
+export function gtinCheckOk(d) {
+  if (!/^\d+$/.test(d) || !GTIN_LENS.has(d.length)) return false;
+  let sum = 0;
+  for (let i = 0; i < d.length - 1; i++) sum += Number(d[i]) * ((d.length - 1 - i) % 2 === 0 ? 3 : 1);
+  return (10 - (sum % 10)) % 10 === Number(d[d.length - 1]);
+}
+
+// Camera misreads can add extra digit(s) at the start and/or end of a code
+// (guard-pattern pickup). If the code itself is not a valid GTIN (check
+// digit), try trimming one digit from each side and only accept a candidate
+// that passes check-digit validation.
+export function normalizeGtin(raw) {
+  const d = String(raw ?? '').replace(/\D/g, '');
+  if (gtinCheckOk(d)) return d;
+  for (const c of [d.slice(1, -1), d.slice(1), d.slice(0, -1)]) if (gtinCheckOk(c)) return c;
+  return d;
+}
+
+async function productByGtin(rawGtin) {
+  const gtin = normalizeGtin(rawGtin);
+  // Learned mapping first — works in thin mode and costs no API quota.
+  const hit = gtinMap.get.get(gtin);
+  if (hit) {
+    const p = await getProduct(hit.vmProductId).catch(() => null);
+    if (p) return p;
+  }
   if (config.productMode !== 'rich') return null; // no official barcode lookup in thin mode
-  const rows = await vmFetch('/my-products/v1/details', { gtin: clean, maxResults: 1 });
-  return rows.length ? normalizeRich(rows[0]) : null;
+  const rows = await vmFetch('/my-products/v1/details', { gtin, maxResults: 1 });
+  if (!rows.length) return null;
+  const p = normalizeRich(rows[0]);
+  productsCache.upsert.run({ ...p, fetchedAt: now() });
+  // Learn the GTINs this product lists (main + pack codes) for future scans.
+  for (const b of rows[0].logistics?.barcodes ?? []) {
+    if (b.gtin) gtinMap.upsert.run(normalizeGtin(b.gtin), p.vmProductId, now());
+  }
+  return p;
 }
 
 function normalizeRich(row) {
@@ -145,10 +178,10 @@ export async function getProduct(id) {
   return cached ?? null;
 }
 
+// productByGtin upserts the products cache itself (both the learned-mapping
+// and rich-API paths) — no double upsert here.
 export async function byGtin(gtin) {
-  const p = await productByGtin(gtin);
-  if (p) productsCache.upsert.run({ ...p, fetchedAt: now() });
-  return p;
+  return productByGtin(gtin);
 }
 
 export async function getPopular(ids) {

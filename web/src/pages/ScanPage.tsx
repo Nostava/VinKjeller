@@ -19,7 +19,11 @@ export default function ScanPage({ items, onRefresh, showToast }: {
   const [result, setResult] = useState<{ product: Product | null; code: string; reason?: string } | null>(null);
   const [showCustom, setShowCustom] = useState(false);
   const [takeOutCode, setTakeOutCode] = useState<string | null>(null);
+  const [remembering, setRemembering] = useState(false);
   const lastScan = useRef(0);
+  // Last code that looked like a barcode (12–14 digits), so the user can
+  // remember it for a product found by another means (name search in thin mode).
+  const lastGtinCode = useRef<string | null>(null);
   const zxingControls = useRef<{ stop: () => void } | null>(null);
 
   async function startCamera() {
@@ -104,6 +108,7 @@ export default function ScanPage({ items, onRefresh, showToast }: {
       let product: Product | null = null;
       let reason: string | undefined;
       if (/^\d{12,14}$/.test(c)) {
+        lastGtinCode.current = c;
         const res = await api.byGtin(c);
         product = res?.product ?? null;
         reason = res?.reason;
@@ -141,6 +146,15 @@ export default function ScanPage({ items, onRefresh, showToast }: {
   const bottlesForResult = result?.product
     ? items.filter((it) => it.source === 'vm' && it.vmProductId === result.product!.vmProductId)
     : [];
+
+  // Offer to save the scanned barcode for the found product — unless the
+  // scanner already read exactly this product's own main GTIN.
+  const knownGtin = (() => {
+    if (!result?.product) return null;
+    try { return (JSON.parse(result.product.extra ?? 'null') as { gtin?: string } | null)?.gtin ?? null; }
+    catch { return null; }
+  })();
+  const rememberBtn = !!(result?.product && lastGtinCode.current && lastGtinCode.current !== knownGtin);
 
   return (
     <div>
@@ -193,6 +207,27 @@ export default function ScanPage({ items, onRefresh, showToast }: {
                 <Button variant="primary" onClick={addProduct}>＋ {t('scan.add')}</Button>
                 {bottlesForResult.length > 0 && (
                   <Button variant="secondary" onClick={() => setTakeOutCode(result.code)}>{t('scan.take_out')} ({bottlesForResult.length})</Button>
+                )}
+                {rememberBtn && (
+                  <Button
+                    variant="tertiary"
+                    loading={remembering}
+                    onClick={async () => {
+                      if (!result.product || !lastGtinCode.current) return;
+                      setRemembering(true);
+                      try {
+                        await api.rememberGtin(lastGtinCode.current, result.product.vmProductId);
+                        lastGtinCode.current = null;
+                        showToast(t('scan.remember_saved'));
+                      } catch (e) {
+                        showToast(e instanceof Error ? e.message : t('common.error'));
+                      } finally {
+                        setRemembering(false);
+                      }
+                    }}
+                  >
+                    💾 {t('scan.remember_code')}
+                  </Button>
                 )}
               </div>
             </>

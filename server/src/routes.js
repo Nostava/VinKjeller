@@ -1,8 +1,8 @@
 import { hashPassword, verifyPassword, newToken, uid } from './auth.js';
 import {
-  db, users, sessions, cellar, recipesDb, roundsDb, storesCache, productsCache, now, purgeVinmonopolData,
+  db, users, sessions, cellar, recipesDb, roundsDb, storesCache, gtinMap, productsCache, now, purgeVinmonopolData,
 } from './db.js';
-import { searchProducts, getProduct, getPopular, byGtin, runDailyJob } from './vinmonopol.js';
+import { searchProducts, getProduct, getPopular, byGtin, normalizeGtin, gtinCheckOk, runDailyJob } from './vinmonopol.js';
 import seedRecipesJson from '../../data/recipes.json' with { type: 'json' };
 const seedRecipes = seedRecipesJson;
 
@@ -119,6 +119,19 @@ export function registerRoutes(app) {
     } catch {
       reply.send({ product: null, reason: 'gtin_unavailable' });
     }
+  });
+
+  // User learned a barcode→product mapping (e.g. found the product by name in
+  // thin mode). The next scan of the same bottle then resolves without any
+  // API lookup — in either mode.
+  app.post('/api/products/remember-gtin', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    const b = req.body ?? {};
+    const gtin = normalizeGtin(b.gtin);
+    const id = String(b.vmProductId ?? '').replace(/\D/g, '');
+    if (!gtinCheckOk(gtin) || !id) return reply.code(400).send({ error: 'bad_request' });
+    gtinMap.upsert.run(gtin, id, now());
+    reply.send({ ok: true, gtin });
   });
 
   app.get('/api/products/:id', async (req, reply) => {
