@@ -16,3 +16,4 @@ data/*.db-*
 
 # TypeScript build-info
 *.tsbuildinfo
+.pi/skills/
