@@ -135,8 +135,8 @@ export default function CellarPage({ items, storeId, onRefresh, showToast, goSca
         </Alert>
       ) : (
         <div className="bottle-grid">
-          {filtered.map((it) => (
-            <BottleCard key={it.id} item={it} onClick={() => setSelected(it)} />
+          {filtered.map((it, idx) => (
+            <BottleCard key={it.id} item={it} index={idx} onClick={() => setSelected(it)} />
           ))}
         </div>
       )}
@@ -183,7 +183,7 @@ function pseudoItem(p: Product): CellarItem {
   };
 }
 
-function BottleCard({ item, onClick }: { item: CellarItem; onClick: () => void }) {
+function BottleCard({ item, index, onClick }: { item: CellarItem; index: number; onClick: () => void }) {
   const { t } = useTranslation();
   const name = item.customName ?? item.product?.name ?? t('bottle.no_data');
   const sub = item.customType ?? item.product?.subCategory ?? item.product?.category ?? '';
@@ -194,10 +194,11 @@ function BottleCard({ item, onClick }: { item: CellarItem; onClick: () => void }
     <button
       onClick={onClick}
       style={{
+        '--i': index, // stagger delay for the entrance animation (app.css)
         display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left',
         border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12,
         padding: 12, background: 'var(--ds-color-accent-background-default)', cursor: 'pointer',
-      }}
+      } as React.CSSProperties}
     >
       <BottleThumb item={item} />
       <strong style={{ fontSize: 14, lineHeight: 1.3 }}>{name}</strong>

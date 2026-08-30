@@ -149,6 +149,69 @@ body {
   z-index: 50;
 }
 
+/* ---------- flair (CSS-only; honors prefers-reduced-motion) ---------- */
+
+@keyframes vk-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+}
+@keyframes vk-pop {
+  from { opacity: 0; transform: scale(0.97); }
+}
+@keyframes vk-toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* tab switch */
+  .tab-page {
+    animation: vk-fade-up 0.28s ease both;
+  }
+
+  /* cellar cards rise in with a small stagger — fill:backwards keeps the
+     hover transform working after the card lands */
+  .bottle-grid > * {
+    animation: vk-fade-up 0.35s ease backwards;
+    animation-delay: calc(min(var(--i, 0), 12) * 40ms);
+  }
+
+  /* scan/search result card */
+  .result-card {
+    animation: vk-pop 0.25s ease both;
+  }
+
+  /* toast slides up with a tiny overshoot (inner div — outer keeps centering) */
+  .toast > div {
+    animation: vk-toast-in 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.35) both;
+  }
+
+  /* micro-interactions */
+  .bottom-nav button,
+  .ds-btn {
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
+  }
+  .bottom-nav button:active,
+  .ds-btn:active {
+    transform: scale(0.96);
+  }
+
+  @media (hover: hover) {
+    .bottle-grid > * {
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .bottle-grid > *:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    }
+  }
+}
+
+/* theme crossfade — color transition, not motion (applied ~350ms on switch) */
+html.theme-anim *,
+html.theme-anim *::before,
+html.theme-anim *::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
 /* camera */
 .scan-video {
   width: 100%;

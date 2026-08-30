@@ -31,7 +31,10 @@ export default function SettingsPage({ user, onLogout, showToast, onSaved }: {
     localStorage.setItem('vk_theme', v);
     // 'auto' is a real value — the DS theme follows the OS via
     // @media (prefers-color-scheme) when data-color-scheme='auto'.
-    document.documentElement.dataset.colorScheme = v;
+    const root = document.documentElement;
+    root.classList.add('theme-anim'); // crossfade (app.css), removed after the transition
+    root.dataset.colorScheme = v;
+    window.setTimeout(() => root.classList.remove('theme-anim'), 350);
   }
 
   async function saveName(e: React.FormEvent) {

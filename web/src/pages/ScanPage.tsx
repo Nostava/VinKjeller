@@ -205,7 +205,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
       </div>
 
       {result && (
-        <div className="mt" style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16 }}>
+        <div className="mt result-card" style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16 }}>
           {result.product ? (
             <>
               <div className="row">
