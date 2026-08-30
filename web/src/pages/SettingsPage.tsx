@@ -29,14 +29,10 @@ export default function SettingsPage({ user, onLogout, showToast, onSaved }: {
   function applyTheme(v: string) {
     setThemeState(v);
     localStorage.setItem('vk_theme', v);
-    if (v === 'auto') delete document.documentElement.dataset.colorScheme;
-    else document.documentElement.dataset.colorScheme = v;
+    // 'auto' is a real value — the DS theme follows the OS via
+    // @media (prefers-color-scheme) when data-color-scheme='auto'.
+    document.documentElement.dataset.colorScheme = v;
   }
-
-  useEffect(() => {
-    const stored = localStorage.getItem('vk_theme') ?? 'auto';
-    if (stored !== 'auto') document.documentElement.dataset.colorScheme = stored;
-  }, []);
 
   async function saveName(e: React.FormEvent) {
     e.preventDefault();

@@ -6,6 +6,13 @@
     <meta name="theme-color" content="#6d1a36" />
     <meta name="description" content="VinKjeller — din personlige vinkjeller" />
     <title>VinKjeller</title>
+    <script>
+      // Apply the saved theme (auto/lys/mørk) before first paint — otherwise the
+      // page loads light and only switches when SettingsPage mounts. 'auto' must
+      // stay as the literal value: the DS theme follows the OS via
+      // @media (prefers-color-scheme) only when data-color-scheme='auto'.
+      document.documentElement.dataset.colorScheme = localStorage.getItem('vk_theme') ?? 'auto';
+    </script>
   </head>
   <body>
     <div id="root"></div>
