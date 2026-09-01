@@ -41,12 +41,12 @@ export const api = {
     source: 'vm' | 'custom'; vmProductId?: string | null; customName?: string | null; customType?: string | null;
     customAbv?: number | null; customVolumeCl?: number | null; price?: number | null;
     photoUrl?: string | null; note?: string | null; qty?: number;
-    cellarId?: string | null; brewInfo?: BrewInfo | null; boughtAt?: string | null;
+    cellarId?: string | null; brewInfo?: BrewInfo | null; boughtAt?: string | null; tag?: string | null;
   }) => req<{ id: string; ids: string[] }>('/api/me/cellar', { method: 'POST', body: JSON.stringify(b) }),
   updateBottle: (id: string, patch: {
     customName?: string | null; customType?: string | null; customAbv?: number | null;
     customVolumeCl?: number | null; price?: number | null; photoUrl?: string | null;
-    note?: string | null; brewInfo?: BrewInfo | null; boughtAt?: string | null;
+    note?: string | null; brewInfo?: BrewInfo | null; boughtAt?: string | null; tag?: string | null;
   }) => req<{ ok: boolean }>(`/api/me/cellar/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   removeBottle: (id: string, reason: string) =>
     req<{ ok: boolean }>(`/api/me/cellar/${id}`, { method: 'DELETE', body: JSON.stringify({ reason }) }),

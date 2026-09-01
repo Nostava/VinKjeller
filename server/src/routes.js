@@ -393,7 +393,8 @@ export function registerRoutes(app) {
         b.note ? String(b.note).slice(0, 500) : null,
         brew,
         now(),
-        validDate(b.boughtAt)
+        validDate(b.boughtAt),
+        b.tag ? String(b.tag).trim().slice(0, 40) : null
       );
       ids.push(id);
     }
@@ -419,6 +420,10 @@ export function registerRoutes(app) {
       b.boughtAt !== undefined ? validDate(b.boughtAt) : null,
       req.params.id
     );
+    // explicit tag change (including clearing it) — see updateTag comment
+    if (b.tag !== undefined) {
+      cellar.updateTag.run(b.tag ? String(b.tag).trim().slice(0, 40) : null, req.params.id);
+    }
     reply.send({ ok: true });
   });
 

@@ -7,6 +7,7 @@ import {
 import { Input } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import type { Cellar, CellarItem, Product } from '../types';
+import nb from '../i18n/nb.json';
 import { BottleThumb, CustomItemForm, ProductFacts, StockLine, imageUrlFromSet, useDebounce } from '../components/ui';
 
 type SortKey = 'recent' | 'shelf' | 'name';
@@ -217,7 +218,7 @@ function pseudoItem(p: Product): CellarItem {
     source: 'vm',
     vmProductId: p.vmProductId,
     customName: null, customType: null, customAbv: null, customVolumeCl: null,
-    price: p.price, photoUrl: null, note: null, brewInfo: null, boughtAt: null,
+    price: p.price, photoUrl: null, note: null, brewInfo: null, boughtAt: null, tag: null,
     addedAt: new Date().toISOString(), removedAt: null, removedReason: null,
     product: p,
   };
@@ -407,6 +408,7 @@ function BottleDialog({ item, storeId, onClose, onChanged, onTakenOut }: {
   const [reason, setReason] = useState('drank');
   const [bought, setBought] = useState((item.boughtAt ?? item.addedAt).slice(0, 10));
   const [savingDate, setSavingDate] = useState(false);
+  const [tagBusy, setTagBusy] = useState(false);
   const name = item.customName ?? item.product?.longName ?? item.product?.name ?? item.vmProductId ?? '';
   const added = new Date(item.addedAt).toLocaleDateString('nb-NO');
 
@@ -440,6 +442,31 @@ function BottleDialog({ item, storeId, onClose, onChanged, onTakenOut }: {
             <div className="ing-row"><span className="muted">{t('bottle.added')}</span><strong>{added}</strong></div>
           </>
         )}
+        <div className="ing-row" style={{ alignItems: 'flex-start' }}>
+          <span className="muted">{t('cellar.tag')}</span>
+          <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <Select
+              value={item.tag ?? ''}
+              aria-label={t('cellar.tag')}
+              style={{ width: 'auto' }}
+              onChange={async (e) => {
+                const v = e.target.value;
+                setTagBusy(true);
+                try {
+                  await api.updateBottle(item.id, { tag: v || null });
+                  await onChanged();
+                } catch { /* keep the dialog on failure */ }
+                finally { setTagBusy(false); }
+              }}
+            >
+              <option value="">{t('cellar.tag_none')}</option>
+              {Object.keys(nb.ing).map((k) => (
+                <option key={k} value={k}>{t('ing.' + k)}</option>
+              ))}
+            </Select>
+            {tagBusy && <Spinner aria-label={t('common.loading')} />}
+          </span>
+        </div>
         <div className="ing-row" style={{ alignItems: 'flex-start' }}>
           <span className="muted">{t('cellar.bought')}</span>
           <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>

@@ -1,4 +1,30 @@
 import type { CellarItem, Ingredient, Recipe, Round } from '../types';
+import recipesSeed from '../../../data/recipes.json';
+
+/** tag (ingredient key) → every keyword it has ever been seeded with.
+ *  Lets a tagged bottle match an ingredient even when its name contains
+ *  none of the keywords (Grey Goose → 'vodka'). */
+const TAG_KEYWORDS: Record<string, string[]> = (() => {
+  const m = new Map<string, string[]>();
+  for (const r of recipesSeed) {
+    for (const i of r.ingredients) {
+      if (!i.nameKey.startsWith('ing.')) continue;
+      const key = i.nameKey.slice(4);
+      const arr = m.get(key) ?? [];
+      for (const kw of i.keywords ?? []) if (!arr.includes(kw)) arr.push(kw);
+      m.set(key, arr);
+    }
+  }
+  return Object.fromEntries(m);
+})();
+
+/** The tag's display label ('vodka' → 'Vodka') for UI. */
+export function tagLabel(tag: string | null | undefined, t: (k: string) => string): string | null {
+  if (!tag) return null;
+  const key = tag.replace(/^ing\./, '');
+  const label = t('ing.' + key);
+  return label && label !== 'ing.' + key ? label : key;
+}
 
 function labelOf(item: CellarItem): string {
   return (
@@ -10,11 +36,14 @@ function labelOf(item: CellarItem): string {
   );
 }
 
-/** All text we match ingredient keywords against. */
+/** All text we match ingredient keywords against — including the bottle's
+ *  tag and every keyword the tag stands for. */
 function haystack(item: CellarItem): string {
   return [
     item.customName,
     item.customType,
+    item.tag,
+    ...(item.tag ? TAG_KEYWORDS[item.tag] ?? [] : []),
     item.product?.name,
     item.product?.longName,
     item.product?.category,

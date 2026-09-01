@@ -34,6 +34,10 @@ export type CellarItem = {
   // When the bottle was bought (user-editable, 'YYYY-MM-DD'). Falls back to
   // addedAt for the shelf-age tag.
   boughtAt: string | null;
+  // Drink-type tag (an ingredient key from data/recipes.json, e.g. 'vodka')
+  // — recipe matching also tests the tag's keywords, so Grey Goose still
+  // counts as vodka even though the name never says so.
+  tag: string | null;
   addedAt: string;
   removedAt: string | null;
   removedReason: string | null;

@@ -158,6 +158,10 @@ function migrate() {
   if (!cols.has('cellarId')) db.exec(`ALTER TABLE cellar_items ADD COLUMN cellarId TEXT REFERENCES cellars(id) ON DELETE CASCADE`);
   if (!cols.has('brewInfo')) db.exec(`ALTER TABLE cellar_items ADD COLUMN brewInfo TEXT`);
   if (!cols.has('boughtAt')) db.exec(`ALTER TABLE cellar_items ADD COLUMN boughtAt TEXT`);
+  // drink-type tag ('vodka', 'rum', 'orange-juice', …) — an ingredient key
+  // from data/recipes.json; makes recipe matching work for bottles whose
+  // name doesn't contain the keyword (e.g. Grey Goose)
+  if (!cols.has('tag')) db.exec(`ALTER TABLE cellar_items ADD COLUMN tag TEXT`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_cellar_items_cellar ON cellar_items(cellarId, removedAt)`);
   // every user gets a home cellar; their existing items move there
   const insC = db.prepare(`INSERT INTO cellars (id,name,ownerUserId,createdAt) VALUES (?,?,?,?)`);
@@ -197,10 +201,13 @@ export const sessions = {
 
 // ---------- cellar ----------
 export const cellar = {
-  insert: db.prepare(`INSERT INTO cellar_items (id,userId,cellarId,source,vmProductId,customName,customType,customAbv,customVolumeCl,price,photoUrl,note,brewInfo,addedAt,boughtAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`),
+  insert: db.prepare(`INSERT INTO cellar_items (id,userId,cellarId,source,vmProductId,customName,customType,customAbv,customVolumeCl,price,photoUrl,note,brewInfo,addedAt,boughtAt,tag) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`),
   list: db.prepare(`SELECT * FROM cellar_items WHERE cellarId = ? AND removedAt IS NULL ORDER BY addedAt DESC`),
   one: db.prepare(`SELECT * FROM cellar_items WHERE id = ?`),
   update: db.prepare(`UPDATE cellar_items SET customName=COALESCE(?,customName), customType=COALESCE(?,customType), customAbv=COALESCE(?,customAbv), customVolumeCl=COALESCE(?,customVolumeCl), price=COALESCE(?,price), photoUrl=COALESCE(?,photoUrl), note=COALESCE(?,note), brewInfo=COALESCE(?,brewInfo), boughtAt=COALESCE(?,boughtAt) WHERE id=?`),
+  // tag gets its own statement: COALESCE(?,tag) cannot express "explicitly
+  // clear the tag" (null means both "not provided" and "remove")
+  updateTag: db.prepare(`UPDATE cellar_items SET tag = ? WHERE id = ?`),
   remove: db.prepare(`UPDATE cellar_items SET removedAt = ?, removedReason = ? WHERE id = ? AND removedAt IS NULL`),
   history: db.prepare(`SELECT * FROM cellar_items WHERE cellarId = ? ORDER BY addedAt DESC LIMIT 200`),
 };

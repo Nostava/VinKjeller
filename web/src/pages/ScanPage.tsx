@@ -33,6 +33,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [cameraMode, setCameraMode] = useState<'off' | 'scan' | 'label'>('off');
   const [cameraErr, setCameraErr] = useState(false);
+  const [showLink, setShowLink] = useState(false);
   const [manual, setManual] = useState('');
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ product: Product | null; code: string; reason?: string } | null>(null);
@@ -591,6 +592,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
                 )}
               </Alert>
               <div className="mt row" style={{ flexWrap: 'wrap' }}>
+                <Button variant="secondary" onClick={() => setShowLink(true)}>🔗 {t('scan.link_cellar')}</Button>
                 <Button variant="secondary" onClick={() => openCamera('label')}>🏷️ {t('scan.read_label')}</Button>
                 <Button variant="secondary" onClick={focusManual}>🔎 {t('scan.search_name')}</Button>
                 <Button variant="tertiary" onClick={() => setShowCustom(true)}>＋ {t('scan.add_custom')}</Button>
@@ -606,6 +608,21 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
             prefill={result && !result.product ? result.code : undefined}
             onSaved={async () => { await onRefresh(); setShowCustom(false); setResult(null); }}
             onCancel={() => setShowCustom(false)}
+          />
+        </Dialog>
+      )}
+
+      {showLink && result && !result.product && (
+        <Dialog open onClose={() => setShowLink(false)}>
+          <LinkGtinDialog
+            gtin={result.code}
+            items={items}
+            showToast={showToast}
+            onLinked={async () => {
+              setShowLink(false);
+              // the code resolves now — show the product as proof
+              await lookup(result.code);
+            }}
           />
         </Dialog>
       )}
@@ -679,7 +696,7 @@ function fakeItem(p: Product): CellarItem {
     source: 'vm',
     vmProductId: p.vmProductId,
     customName: null, customType: null, customAbv: null, customVolumeCl: null,
-    price: p.price, photoUrl: null, note: null, brewInfo: null, boughtAt: null,
+    price: p.price, photoUrl: null, note: null, brewInfo: null, boughtAt: null, tag: null,
     addedAt: new Date().toISOString(), removedAt: null, removedReason: null,
     product: p,
   };
@@ -719,5 +736,79 @@ function TakeOutDialog({ bottles, onClose, onDone }: {
         <Button variant="tertiary" onClick={onClose}>{t('common.cancel')}</Button>
       </div>
     </Dialog>
+  );
+}
+
+/** Unknown barcode → link it to a bottle already in the cellar (e.g. added
+ *  through "Legg til" by name, so no barcode was learned). The mapping is
+ *  stored in the global gtin_map, so every user benefits from it. */
+function LinkGtinDialog({ gtin, items, onLinked, showToast }: {
+  gtin: string;
+  items: CellarItem[];
+  onLinked: () => void;
+  showToast: (m: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [q, setQ] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const ql = q.trim().toLowerCase();
+  const list = items
+    .filter((it) => it.source === 'vm')
+    .filter((it) => {
+      if (!ql) return true;
+      const hay = [it.customName, it.product?.name, it.product?.longName].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(ql);
+    })
+    .slice(0, 30);
+
+  async function link(vmProductId: string, id: string) {
+    setBusyId(id);
+    try {
+      await api.rememberGtin(gtin, vmProductId);
+      showToast(t('scan.remember_saved'));
+      onLinked();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : t('common.error'));
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      <Heading level={2} data-size="lg">{t('scan.link_title')}</Heading>
+      <p className="muted" style={{ fontSize: 13, margin: 0, overflowWrap: 'anywhere' }}>
+        {t('scan.link_note', { code: gtin })}
+      </p>
+      <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('scan.link_ph')} aria-label={t('scan.link_ph')} autoFocus />
+      {list.length === 0 ? (
+        <Alert data-color="info">{t('scan.link_empty')}</Alert>
+      ) : (
+        <div style={{ display: 'grid', gap: 6 }}>
+          {list.map((it) => {
+            const img = imageUrlFromSet(it.product?.imageUrls ?? null);
+            const name = it.customName ?? it.product?.name ?? it.vmProductId ?? '';
+            return (
+              <Button
+                key={it.id}
+                variant="secondary"
+                loading={busyId === it.id}
+                onClick={() => link(it.vmProductId ?? '', it.id)}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8 }}
+              >
+                {img && (
+                  <img
+                    src={img}
+                    alt=""
+                    style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 6, background: 'var(--ds-color-background-tinted)', flexShrink: 0 }}
+                  />
+                )}
+                <span style={{ textAlign: 'left' }}>{name}</span>
+              </Button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

@@ -62,6 +62,8 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
 
 ## [Unreleased]
 ### Added
+- **🔗 Koble ukjent strekkode til kjelleren** — skanner du en strekkode som appen ikke kjenner (f.eks. flasker lagt til via «Legg til» uten at strekkoden ble lært), kan du nå trykke «Koble til kjelleren» og peke på flasken. Strekkoden huskes deretter (globalt) og slår opp med det samme neste gang.
+- **Drikke-type på flasker** — i flaskedialogen kan du nå merke en flaske som f.eks. «Vodka», «Rum» eller «Tequila». Drikkesjekken ser på typen i tillegg til navnet, så f.eks. Grey Goose teller som vodka selv om navnet aldri nevner det.
 - **«Legg til» flyter videre** — etter å ha lagt til en vinmonopol-flaske holder dialogen åpen og starter på nytt (søkefeltet er ryddet og ferdig til neste produkts søk) — så man kan legge til hele hyllen uten å lete etter knappen mellom hver flaske.
 - **Miniatyrer i «Legg til»-søket** — søkeresultatene viser nå produktbilde, så man kan skille mellom produkter med samme navn men ulik flaske.
 - **Kjøpsdato kan redigeres** — i flaskevinduet er det nå et «Kjøpt»-felt med datovelger. «På hyllen X mnd» teller fra kjøpsdatoen (eller tilleggstidspunktet hvis du ikke har satt den). Nye brukere kan dermed registrere flasker de kjøpte for lenge siden.

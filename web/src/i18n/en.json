@@ -19,6 +19,8 @@
     "title": "My cellar",
     "empty": "The cellar is empty. Scan a bottle to get started!",
     "bought": "Bought",
+    "tag": "Drink type",
+    "tag_none": "—",
     "switch": "Switch",
     "role_owner": "owner",
     "role_member": "member",
@@ -143,7 +145,12 @@
     "camera_err": "Camera unavailable. Use manual search.",
     "add_custom": "Custom item",
     "remember_code": "Save this product’s barcode",
-    "remember_saved": "Barcode saved"
+    "remember_saved": "Barcode saved",
+    "link_cellar": "Link to cellar",
+    "link_title": "Link barcode to cellar",
+    "link_note": "Which bottle in the cellar is {{code}}? Pick it, and the app will remember the code next time.",
+    "link_ph": "Search your cellar…",
+    "link_empty": "No Vinmonopol bottles in the cellar to link."
   },
   "drinks": {
     "title": "Drinks",

@@ -19,6 +19,8 @@
     "title": "Min vinkjellar",
     "empty": "Kjellaren er tom. Skann ein flaske for å starte!",
     "bought": "Kjøpt",
+    "tag": "Drikke-type",
+    "tag_none": "—",
     "switch": "Bytt",
     "role_owner": "eigar",
     "role_member": "medlem",
@@ -143,7 +145,12 @@
     "camera_err": "Kameraet er ikkje tilgjengeleg. Bruk manuell søk.",
     "add_custom": "Eigen vare",
     "remember_code": "Lagre strekkoda for dette produktet",
-    "remember_saved": "Strekkoda er lagra"
+    "remember_saved": "Strekkoda er lagra",
+    "link_cellar": "Koble til kjellaren",
+    "link_title": "Koble strekkode til kjellaren",
+    "link_note": "Kva flaske i kjellaren er {{code}}? Velg han, så hugsar appen koden neste gang.",
+    "link_ph": "Søk i kjellaren…",
+    "link_empty": "Ingen Vinmonopol-flasker i kjellaren å koble til."
   },
   "drinks": {
     "title": "Drikk",

@@ -19,6 +19,8 @@
     "title": "Hầm rượu của tôi",
     "empty": "Hầm rượu đang trống. Quét một chai để bắt đầu!",
     "bought": "Đã mua",
+    "tag": "Loại đồ uống",
+    "tag_none": "—",
     "switch": "Chuyển",
     "role_owner": "chủ",
     "role_member": "thành viên",
@@ -142,7 +144,12 @@
     "camera_err": "Không truy cập được camera. Dùng tìm thủ công.",
     "add_custom": "Sản phẩm riêng",
     "remember_code": "Lưu mã vạch cho sản phẩm này",
-    "remember_saved": "Đã lưu mã vạch"
+    "remember_saved": "Đã lưu mã vạch",
+    "link_cellar": "Liên kết với hầm rượu",
+    "link_title": "Liên kết mã vạch với hầm rượu",
+    "link_note": "Mã {{code}} là chai nào trong hầm rượu? Chọn chai đó, ứng dụng sẽ nhớ mã cho lần sau.",
+    "link_ph": "Tìm trong hầm rượu…",
+    "link_empty": "Không có chai Vinmonopol nào trong hầm rượu để liên kết."
   },
   "drinks": {
     "title": "Đồ uống",
