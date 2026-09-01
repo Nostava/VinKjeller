@@ -23,20 +23,15 @@
     "shelf": "On the shelf",
     "shelf_months_one": "1 month",
     "shelf_months_other": "{{count}} months",
-    "popular": "Popular in Norway",
     "sort_recent": "Newest",
     "sort_shelf": "Longest on shelf",
     "sort_name": "Name A–Z",
-    "sort_price": "Price",
     "filter_category": "Category",
     "filter_country": "Country",
     "filter_all": "All",
-    "price_min": "Price from",
-    "price_max": "Price to",
     "clear_filters": "Clear filters",
     "out": "Take out",
     "out_title": "Take out this bottle?",
-    "value": "Value",
     "reason_drank": "Drank",
     "reason_given": "Given away",
     "reason_spoiled": "Spoiled",
@@ -89,7 +84,6 @@
   "bottle": {
     "abv": "Alcohol",
     "volume": "Volume",
-    "price": "Price",
     "category": "Category",
     "country": "Country",
     "region": "Region",
@@ -179,7 +173,6 @@
     "type": "Type",
     "abv": "Alcohol (vol. %)",
     "volume": "Volume (cl)",
-    "price": "Price (kr)",
     "note": "Note",
     "save": "Save"
   },
@@ -212,7 +205,9 @@
     "note": "You are viewing the bottles in this cellar (read-only).",
     "expired_title": "This link has expired",
     "notfound_title": "This link does not exist or was revoked",
-    "empty": "The cellar is empty"
+    "empty": "The cellar is empty",
+    "qr_alt": "QR code for the share link",
+    "qr_hint": "Scan with the camera — guests don't need to install anything"
   },
   "settings": {
     "title": "Settings",

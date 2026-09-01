@@ -51,7 +51,6 @@ export function CustomItemForm({ prefill, onSaved, onCancel }: {
   const [type, setType] = useState('');
   const [abv, setAbv] = useState('');
   const [vol, setVol] = useState('');
-  const [price, setPrice] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -67,7 +66,6 @@ export function CustomItemForm({ prefill, onSaved, onCancel }: {
         customType: type.trim() || null,
         customAbv: abv ? Number(abv) : null,
         customVolumeCl: vol ? Number(vol) : null,
-        price: price ? Number(price) : null,
         note: note.trim() || null,
       });
       onSaved();
@@ -96,10 +94,6 @@ export function CustomItemForm({ prefill, onSaved, onCancel }: {
         <div>
           <Label htmlFor="c-vol">{t('custom.volume')}</Label>
           <Input id="c-vol" type="number" step="1" min="0" value={vol} onChange={(e) => setVol(e.target.value)} style={{ width: 120 }} />
-        </div>
-        <div>
-          <Label htmlFor="c-price">{t('custom.price')}</Label>
-          <Input id="c-price" type="number" step="0.01" min="0" value={price} onChange={(e) => setPrice(e.target.value)} style={{ width: 120 }} />
         </div>
       </div>
       <div>
@@ -132,7 +126,6 @@ export function ProductFacts({ product }: { product: Product }) {
       {row(t('bottle.category'), [product.category, product.subCategory].filter(Boolean).join(' / '))}
       {row(t('bottle.abv'), product.abv !== null ? product.abv + ' %' : null)}
       {row(t('bottle.volume'), product.volumeCl !== null ? product.volumeCl + ' cl' : null)}
-      {row(t('bottle.price'), product.price !== null ? product.price + ' kr' : null)}
       {row(t('bottle.country'), [product.country, product.region, product.subRegion].filter(Boolean).join(' / '))}
       {row(t('bottle.vintage'), product.vintage)}
       {product.description && (

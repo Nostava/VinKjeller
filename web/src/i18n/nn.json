@@ -23,20 +23,15 @@
     "shelf": "På hylla",
     "shelf_months_one": "1 månad",
     "shelf_months_other": "{{count}} månader",
-    "popular": "Populær i Noreg",
     "sort_recent": "Nyast",
     "sort_shelf": "Lengst på hylla",
     "sort_name": "Namn A–Å",
-    "sort_price": "Pris",
     "filter_category": "Kategori",
     "filter_country": "Land",
     "filter_all": "Alle",
-    "price_min": "Pris frå",
-    "price_max": "Pris til",
     "clear_filters": "Nullstill filtrene",
     "out": "Ta ut",
     "out_title": "Ta ut flasken?",
-    "value": "Verdi",
     "reason_drank": "Drunken",
     "reason_given": "Gitt bort",
     "reason_spoiled": "Forvorne",
@@ -89,7 +84,6 @@
   "bottle": {
     "abv": "Alkohol",
     "volume": "Volum",
-    "price": "Pris",
     "category": "Kategori",
     "country": "Land",
     "region": "Distrikt",
@@ -179,7 +173,6 @@
     "type": "Type",
     "abv": "Alkohol (vol. %)",
     "volume": "Volum (cl)",
-    "price": "Pris (kr)",
     "note": "Merknad",
     "save": "Lagre"
   },
@@ -212,7 +205,9 @@
     "note": "Du ser flaskene i denne kjellaren (berre lesing).",
     "expired_title": "Denne lenka har løypt ut",
     "notfound_title": "Denne lenka finst ikkje eller er revokert",
-    "empty": "Kjellaren er tom"
+    "empty": "Kjellaren er tom",
+    "qr_alt": "QR-kode for delt lenke",
+    "qr_hint": "Skann med kameraet — gjestane treng ikkje installere noko"
   },
   "settings": {
     "title": "Innstillingar",

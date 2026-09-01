@@ -22,20 +22,15 @@
     "filter_ph": "Lọc chai…",
     "shelf": "Trên kệ",
     "shelf_months_other": "{{count}} tháng",
-    "popular": "Phổ biến ở Na Uy",
     "sort_recent": "Mới nhất",
     "sort_shelf": "Lâu nhất trên kệ",
     "sort_name": "Tên A–Z",
-    "sort_price": "Giá",
     "filter_category": "Danh mục",
     "filter_country": "Quốc gia",
     "filter_all": "Tất cả",
-    "price_min": "Giá từ",
-    "price_max": "Giá đến",
     "clear_filters": "Xóa bộ lọc",
     "out": "Lấy ra",
     "out_title": "Lấy ra chai này?",
-    "value": "Giá trị",
     "reason_drank": "Đã uống",
     "reason_given": "Đã tặng",
     "reason_spoiled": "Đã hỏng",
@@ -88,7 +83,6 @@
   "bottle": {
     "abv": "Độ cồn",
     "volume": "Dung tích",
-    "price": "Giá",
     "category": "Danh mục",
     "country": "Quốc gia",
     "region": "Vùng",
@@ -175,7 +169,6 @@
     "type": "Loại",
     "abv": "Độ cồn (% vol)",
     "volume": "Dung tích (cl)",
-    "price": "Giá (kr)",
     "note": "Ghi chú",
     "save": "Lưu"
   },
@@ -208,7 +201,9 @@
     "note": "Bạn đang xem các chai trong hầm rượu này (chỉ đọc).",
     "expired_title": "Link này đã hết hạn",
     "notfound_title": "Link này không tồn tại hoặc đã bị huỷ",
-    "empty": "Hầm rượu trống"
+    "empty": "Hầm rượu trống",
+    "qr_alt": "Mã QR cho link chia sẻ",
+    "qr_hint": "Quét bằng camera — khách không cần cài gì"
   },
   "settings": {
     "title": "Cài đặt",

@@ -1,3 +1,4 @@
+import QRCode from 'qrcode';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -8,7 +9,7 @@ import { api } from '../api';
 import type { Cellar, CellarItem, Product } from '../types';
 import { BottleThumb, CustomItemForm, ProductFacts, StockLine, useDebounce } from '../components/ui';
 
-type SortKey = 'recent' | 'shelf' | 'name' | 'price';
+type SortKey = 'recent' | 'shelf' | 'name';
 
 export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, onCellarsChanged, storeId, onRefresh, showToast, goScan }: {
   items: CellarItem[];
@@ -25,8 +26,6 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
   const [filter, setFilter] = useState('');
   const [cat, setCat] = useState('');
   const [country, setCountry] = useState('');
-  const [pmin, setPmin] = useState('');
-  const [pmax, setPmax] = useState('');
   const [sort, setSort] = useState<SortKey>('recent');
   const [selected, setSelected] = useState<CellarItem | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -46,8 +45,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
       .sort((a, b) => a.localeCompare(b, 'nb')),
     [items]
   );
-  const hasPrices = items.some((i) => i.price !== null);
-  const hasFilters = !!(cat || country || pmin || pmax);
+  const hasFilters = !!(cat || country);
 
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
@@ -62,23 +60,15 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
         if (c !== cat) return false;
       }
       if (country && it.product?.country !== country) return false;
-      if (pmin !== '' && (it.price === null || it.price < Number(pmin))) return false;
-      if (pmax !== '' && (it.price === null || it.price > Number(pmax))) return false;
       return true;
     });
     const label = (it: CellarItem) => it.customName ?? it.product?.name ?? it.product?.longName ?? '';
     switch (sort) {
       case 'shelf': return [...list].sort((a, b) => a.addedAt.localeCompare(b.addedAt));
       case 'name': return [...list].sort((a, b) => label(a).localeCompare(label(b), 'nb'));
-      case 'price': return [...list].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
       default: return [...list].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
     }
-  }, [items, filter, cat, country, pmin, pmax, sort]);
-
-  const totalValue = useMemo(
-    () => items.reduce((s, it) => s + (it.price ?? 0), 0),
-    [items],
-  );
+  }, [items, filter, cat, country, sort]);
 
   return (
     <div>
@@ -101,7 +91,6 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
           <Button variant="tertiary" onClick={() => setShowShare(true)}>🎉 {t('share.short')}</Button>
         )}
         <span className="spacer" />
-        <span className="muted">{t('cellar.value')}: <strong>{Math.round(totalValue)} kr</strong></span>
       </div>
 
       {items.length > 0 && (
@@ -117,12 +106,11 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
             <option value="recent">{t('cellar.sort_recent')}</option>
             <option value="shelf">{t('cellar.sort_shelf')}</option>
             <option value="name">{t('cellar.sort_name')}</option>
-            <option value="price">{t('cellar.sort_price')}</option>
           </Select>
         </div>
       )}
 
-      {(cats.length > 0 || countries.length > 0 || hasPrices) && items.length > 0 && (
+      {(cats.length > 0 || countries.length > 0) && items.length > 0 && (
         <div className="row mb" style={{ flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           {cats.length > 0 && (
             <Select value={cat} onChange={(e) => setCat(e.target.value)} aria-label={t('cellar.filter_category')} style={{ width: 'auto', maxWidth: 220 }}>
@@ -136,15 +124,8 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
               {countries.map((c) => <option key={c} value={c}>{c}</option>)}
             </Select>
           )}
-          {hasPrices && (
-            <>
-              <Input type="number" min="0" value={pmin} onChange={(e) => setPmin(e.target.value)} placeholder={t('cellar.price_min')} aria-label={t('cellar.price_min')} style={{ width: 100 }} />
-              <span className="muted">–</span>
-              <Input type="number" min="0" value={pmax} onChange={(e) => setPmax(e.target.value)} placeholder={t('cellar.price_max')} aria-label={t('cellar.price_max')} style={{ width: 100 }} />
-            </>
-          )}
           {hasFilters && (
-            <Button variant="tertiary" onClick={() => { setCat(''); setCountry(''); setPmin(''); setPmax(''); }}>✕ {t('cellar.clear_filters')}</Button>
+            <Button variant="tertiary" onClick={() => { setCat(''); setCountry(''); }}>✕ {t('cellar.clear_filters')}</Button>
           )}
         </div>
       )}
@@ -230,7 +211,6 @@ function BottleCard({ item, index, onClick }: { item: CellarItem; index: number;
   const sub = item.customType ?? item.product?.subCategory ?? item.product?.category ?? '';
   const isBrew = !!item.brewInfo;
   const months = Math.max(0, Math.floor((Date.now() - new Date(item.addedAt).getTime()) / (30.44 * 86400000)));
-  const pop = item.popularity;
 
   return (
     <button
@@ -247,9 +227,6 @@ function BottleCard({ item, index, onClick }: { item: CellarItem; index: number;
       <span className="muted" style={{ fontSize: 12 }}>{sub}</span>
       <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
         <Tag variant="outline">{t('cellar.shelf')} {t('cellar.shelf_months', { count: months })}</Tag>
-        {pop && pop.items > 500 && (
-          <Tag>⭐ {t('cellar.popular')}</Tag>
-        )}
       </div>
     </button>
   );
@@ -421,12 +398,8 @@ function BottleDialog({ item, storeId, onClose, onTakenOut }: {
             <div className="ing-row"><span className="muted">{t('bottle.added')}</span><strong>{added}</strong></div>
           </>
         )}
-        {item.price !== null && <div className="ing-row"><span className="muted">{t('bottle.price')}</span><strong>{item.price} kr</strong></div>}
         <div className="ing-row"><span className="muted">{t('bottle.added')}</span><strong>{added}</strong></div>
         {item.note && <div className="ing-row"><span className="muted">{t('bottle.note')}</span><span>{item.note}</span></div>}
-        {item.popularity && item.popularity.items > 0 && (
-          <div className="ing-row"><span className="muted">Salg siste 12 mnd</span><strong>{item.popularity.liters.toLocaleString('nb-NO')} L / {item.popularity.items.toLocaleString('nb-NO')} flasker</strong></div>
-        )}
       </div>
 
       <div className="mt" style={{ display: 'grid', gap: 12 }}>
@@ -465,11 +438,23 @@ function ShareDialog({ cellarId, cellarName, showToast }: {
   const [busy, setBusy] = useState(false);
   const [fresh, setFresh] = useState<{ token: string; url: string; expiresAt: string | null } | null>(null);
   const [shares, setShares] = useState<{ token: string; label: string | null; expiresAt: string | null; createdAt: string }[] | null>(null);
+  const [qr, setQr] = useState<{ label: string; dataUrl: string } | null>(null);
 
   const load = () => api.listShares(cellarId).then((r) => setShares(r.items)).catch(() => {});
   useEffect(() => { load(); }, [cellarId]);
 
   function fullUrl(path: string) { return window.location.origin + path; }
+
+  // QR is generated locally (qrcode package, no API call) — the URL is the
+  // whole payload, so a camera scan opens the guest view directly.
+  async function showQr(label: string, path: string) {
+    try {
+      const dataUrl = await QRCode.toDataURL(fullUrl(path), { width: 240, margin: 1, errorCorrectionLevel: 'M' });
+      setQr({ label, dataUrl });
+    } catch {
+      setQr(null);
+    }
+  }
 
   async function copy(text: string) {
     try {
@@ -494,6 +479,7 @@ function ShareDialog({ cellarId, cellarName, showToast }: {
       setFresh(r);
       setLabel('');
       load();
+      showQr(label.trim() || t('share.title'), r.url);
     } catch (e) {
       showToast(e instanceof Error ? e.message : t('common.error'));
     } finally {
@@ -507,6 +493,7 @@ function ShareDialog({ cellarId, cellarName, showToast }: {
       await api.revokeShare(cellarId, token);
       load();
       if (fresh?.token === token) setFresh(null);
+      if (qr && shares?.some((s) => s.token === token)) setQr(null);
     } catch (e) {
       showToast(e instanceof Error ? e.message : t('common.error'));
     } finally {
@@ -526,6 +513,19 @@ function ShareDialog({ cellarId, cellarName, showToast }: {
             <Input readOnly value={fullUrl(fresh.url)} aria-label={t('share.link')} style={{ flex: 1, fontSize: 13 }} />
             <Button variant="secondary" onClick={() => copy(fullUrl(fresh.url))}>{t('share.copy_btn')}</Button>
           </div>
+        </div>
+      )}
+
+      {qr && (
+        <div style={{ display: 'grid', justifyItems: 'center', gap: 6, padding: '4px 0' }}>
+          <img
+            src={qr.dataUrl}
+            alt={t('share.qr_alt')}
+            width={220}
+            height={220}
+            style={{ borderRadius: 10, border: '1px solid var(--ds-color-border-subtle)', background: '#fff', padding: 8 }}
+          />
+          <span className="muted" style={{ fontSize: 12, textAlign: 'center' }}>{t('share.qr_hint')}</span>
         </div>
       )}
 
@@ -554,6 +554,7 @@ function ShareDialog({ cellarId, cellarName, showToast }: {
                 </span>
               </span>
               <Button variant="tertiary" onClick={() => copy(fullUrl('/j/' + s.token))}>⧉</Button>
+              <Button variant="tertiary" onClick={() => showQr(s.label ?? s.token.slice(0, 6), '/j/' + s.token)}>📷</Button>
               <Button variant="tertiary" loading={busy} onClick={() => revoke(s.token)}>✕</Button>
             </div>
           ))}

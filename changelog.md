@@ -62,6 +62,9 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
 
 ## [Unreleased]
 ### Added
+- **QR-kode for delt lenke** — i «Del»-dialogen vises QR-koden automatisk når lenken er generert (og 📷-knappen på hver aktiv lenke). Koden lages lokalt på telefonen (ingen API-kall) og peker rett på gjest-visningen — gjestene skanner med kameraet og får kjelleren rett opp, ingen installasjon.
+### Removed
+- **Priser og salgstall bort** — «Verdi»-summator, prisfilter/sortering, prislinja i flaske- og produktvindu, «⭐ Populær»-merket og «Salg siste 12 mnd» er fjernet fra alt UI (og prisfeltet fra egen-vare-formularet). Dataene ligger fortsatt i databasen — bare skjult, så de kan komme tilbake uten at noe tapes.
 - **🎉 Partydeling** — «Del»-knappen i kjelleroversikten lager en gjest-lenke (f.eks. `v.harsku.no/j/abcd…`) som åpner kjelleren kun-lesende — gjestene trenger ikke konto. Velg navn (f.eks. «Fest lørdag»), utløper (2 timer / 1–3 dager / 1 uke / inntil revokert), kopier lenken, og revoker når som helst. Gjestene ser bare flaskene; ingen personlige data eller drikkelog forlater kjelleren.
 - **Innstillinger flyttet til toppen** — ⚙️-knappen står nå i toppbaren (navnet ditt ligger der), så buntnavet får pusterom igjen (4 faner).
 - **Delte kjellerer** — kjelleren er nå en egen ting som brukere kan være med i (eier/medlem). Velgeren «🍷 <kjeller> ▾» øverst i Kjeller-visningen bytter mellom kjellerene dine, lager nye, og (som eier) inviterer medlemmer med e-post/brukernavn, fjerner dem, endrer navn og sletter kjelleren. Eksisterende flasker flyttes automatisk til en ny «Hjemmekjeller» ved oppstart. Produktlag (produkter, lagrede strekkoder) er fortsatt universelt — det deles ikke, det er bare der for alle.
