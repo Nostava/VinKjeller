@@ -38,6 +38,10 @@ export type CellarItem = {
   // — recipe matching also tests the tag's keywords, so Grey Goose still
   // counts as vodka even though the name never says so.
   tag: string | null;
+  // Fridge item toggle: null = regular cellar item, 1 = fridge item
+  // (available), 0 = fridge item (used up). Fridge items satisfy drink
+  // ingredients as a boolean — infinite supply, no cl-math.
+  fridgeOn: number | null;
   addedAt: string;
   removedAt: string | null;
   removedReason: string | null;

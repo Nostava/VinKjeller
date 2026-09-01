@@ -696,7 +696,7 @@ function fakeItem(p: Product): CellarItem {
     source: 'vm',
     vmProductId: p.vmProductId,
     customName: null, customType: null, customAbv: null, customVolumeCl: null,
-    price: p.price, photoUrl: null, note: null, brewInfo: null, boughtAt: null, tag: null,
+    price: p.price, photoUrl: null, note: null, brewInfo: null, boughtAt: null, tag: null, fridgeOn: null,
     addedAt: new Date().toISOString(), removedAt: null, removedReason: null,
     product: p,
   };

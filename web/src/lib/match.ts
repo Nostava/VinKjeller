@@ -58,6 +58,18 @@ export function bottleLabel(item: CellarItem): string {
   return labelOf(item);
 }
 
+/** True for fridge items (toggle state 0 or 1, not null). */
+export function isFridgeItem(item: CellarItem): boolean {
+  return item.fridgeOn !== null && item.fridgeOn !== undefined;
+}
+
+/** A fridge item satisfies an ingredient if it's ON and its name matches
+ *  any of the ingredient's keywords. */
+function fridgeSatisfies(ing: Ingredient, fridge: CellarItem[]): boolean {
+  const kws = ing.keywords.map((k) => k.toLowerCase());
+  return fridge.some((fi) => fi.fridgeOn === 1 && kws.some((k) => haystack(fi).includes(k)));
+}
+
 /** Total volume (cl) of a bottle. */
 export function bottleVolumeCl(item: CellarItem): number | null {
   return item.customVolumeCl ?? item.product?.volumeCl ?? null;
@@ -79,6 +91,8 @@ export type IngStatus = {
   // matched bottles whose volume we don't know (thin mode has no product
   // volume) — they still count as available, just not measurable
   unknownCount: number;
+  // satisfied by an ON fridge item (infinite supply — never limits rounds)
+  fridge: boolean;
   ok: boolean;
 };
 
@@ -91,21 +105,27 @@ export type RecipeStatus = {
 };
 
 export function recipeStatus(recipe: Recipe, items: CellarItem[]): RecipeStatus {
+  // fridge items are not bottles — they satisfy ingredients as a boolean
+  const fridge = items.filter(isFridgeItem);
+  const bottles = items.filter((it) => !isFridgeItem(it));
   const ings: IngStatus[] = recipe.ingredients.map((ing) => {
-    const matches = matchBottles(ing, items);
+    const matches = matchBottles(ing, bottles);
     const known = matches.filter((m) => bottleVolumeCl(m) !== null);
     const unknownCount = matches.length - known.length;
     const availableCl = known.reduce((sum, m) => sum + (bottleVolumeCl(m) ?? 0), 0);
+    const fridgeOk = fridgeSatisfies(ing, fridge);
     // A matched bottle with unknown volume still satisfies the ingredient —
-    // the bottle is in the cellar, we just can't measure it in cl.
-    const ok = matches.length > 0 && (ing.cl <= 0 ? true : unknownCount > 0 || availableCl >= ing.cl);
-    return { ing, matches, availableCl, unknownCount, ok };
+    // the bottle is in the cellar, we just can't measure it in cl. An ON
+    // fridge item satisfies it outright (juice doesn't run out mid-party).
+    const ok = fridgeOk || (matches.length > 0 && (ing.cl <= 0 ? true : unknownCount > 0 || availableCl >= ing.cl));
+    return { ing, matches, availableCl, unknownCount, fridge: fridgeOk, ok };
   });
 
   const required = ings.filter((i) => !i.ing.optional);
   let maxRounds = Infinity;
   for (const i of required) {
     if (!i.ok) continue;
+    if (i.fridge) continue; // fridge-satisfied: infinite supply, never limiting
     if (i.ing.cl > 0) {
       // unknown-volume bottles: we can't do cl-math, count bottles instead
       maxRounds = Math.min(maxRounds, i.unknownCount > 0 ? i.matches.length : Math.floor(i.availableCl / i.ing.cl));

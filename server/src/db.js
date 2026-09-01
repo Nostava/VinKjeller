@@ -162,6 +162,10 @@ function migrate() {
   // from data/recipes.json; makes recipe matching work for bottles whose
   // name doesn't contain the keyword (e.g. Grey Goose)
   if (!cols.has('tag')) db.exec(`ALTER TABLE cellar_items ADD COLUMN tag TEXT`);
+  // fridge item? NULL = regular cellar item, 1 = fridge item on (available),
+  // 0 = fridge item off (used up). Fridge items live in the same cellar so
+  // guests and co-members see them, but they're toggles, not bottles.
+  if (!cols.has('fridgeOn')) db.exec(`ALTER TABLE cellar_items ADD COLUMN fridgeOn INTEGER`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_cellar_items_cellar ON cellar_items(cellarId, removedAt)`);
   // every user gets a home cellar; their existing items move there
   const insC = db.prepare(`INSERT INTO cellars (id,name,ownerUserId,createdAt) VALUES (?,?,?,?)`);
@@ -201,7 +205,9 @@ export const sessions = {
 
 // ---------- cellar ----------
 export const cellar = {
-  insert: db.prepare(`INSERT INTO cellar_items (id,userId,cellarId,source,vmProductId,customName,customType,customAbv,customVolumeCl,price,photoUrl,note,brewInfo,addedAt,boughtAt,tag) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`),
+  insert: db.prepare(`INSERT INTO cellar_items (id,userId,cellarId,source,vmProductId,customName,customType,customAbv,customVolumeCl,price,photoUrl,note,brewInfo,addedAt,boughtAt,tag,fridgeOn) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`),
+  // fridge toggle (1 = available, 0 = used up)
+  setFridgeOn: db.prepare(`UPDATE cellar_items SET fridgeOn = ? WHERE id = ?`),
   list: db.prepare(`SELECT * FROM cellar_items WHERE cellarId = ? AND removedAt IS NULL ORDER BY addedAt DESC`),
   one: db.prepare(`SELECT * FROM cellar_items WHERE id = ?`),
   update: db.prepare(`UPDATE cellar_items SET customName=COALESCE(?,customName), customType=COALESCE(?,customType), customAbv=COALESCE(?,customAbv), customVolumeCl=COALESCE(?,customVolumeCl), price=COALESCE(?,price), photoUrl=COALESCE(?,photoUrl), note=COALESCE(?,note), brewInfo=COALESCE(?,brewInfo), boughtAt=COALESCE(?,boughtAt) WHERE id=?`),
@@ -218,7 +224,7 @@ export const cellars = {
   // first cellar the user belongs to (by creation order) — the fallback
   homeOf: db.prepare(`SELECT c.* FROM cellars c JOIN cellar_members m ON m.cellarId = c.id WHERE m.userId = ? ORDER BY c.createdAt LIMIT 1`),
   forUser: db.prepare(`SELECT c.id, c.name, c.ownerUserId, c.createdAt, m.role,
-      (SELECT COUNT(*) FROM cellar_items i WHERE i.cellarId = c.id AND i.removedAt IS NULL) AS itemCount
+      (SELECT COUNT(*) FROM cellar_items i WHERE i.cellarId = c.id AND i.removedAt IS NULL AND i.fridgeOn IS NULL) AS itemCount
     FROM cellars c JOIN cellar_members m ON m.cellarId = c.id WHERE m.userId = ? ORDER BY c.createdAt`),
   remove: db.prepare(`DELETE FROM cellars WHERE id = ? AND ownerUserId = ?`),
   rename: db.prepare(`UPDATE cellars SET name = ? WHERE id = ? AND ownerUserId = ?`),

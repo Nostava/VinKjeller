@@ -38,6 +38,16 @@ export function IconBrew() {
   );
 }
 
+export function IconWaffle() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      {[6, 12, 18].flatMap((y) =>
+        [6, 12, 18].map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.7" fill="currentColor" stroke="none" />)
+      )}
+    </svg>
+  );
+}
+
 export function IconSettings() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">

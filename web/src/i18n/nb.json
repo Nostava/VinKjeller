@@ -1,6 +1,18 @@
 {
   "app": { "name": "VinKjeller" },
   "nav": { "cellar": "Kjeller", "brew": "Brygg", "drinks": "Drinker", "scan": "Skann", "settings": "Innstillinger" },
+  "menu": { "title": "Mer", "fridge": "Kjøleskap", "settings": "Innstillinger" },
+  "fridge": {
+    "title": "Kjøleskap",
+    "hint": "Det som ikke står i flasker: saft, brus, vann, sukker. Slå av når det er brukt opp — så teller det ikke i drikkene.",
+    "add_ph": "F.eks. Appelsinjuis, Vann, Sukker…",
+    "add": "Legg til",
+    "empty": "Ingenting i kjøleskapet ennå. Legg til saft, brus, vann, sukker — så teller det som tilgjengelig i drikkene.",
+    "on": "På plass",
+    "off": "Brukt opp",
+    "dupe": "Ligger allerede i kjøleskapet",
+    "toggle": "tilgjengelig"
+  },
   "common": { "cancel": "Avbryt", "close": "Lukk", "save": "Lagre", "ok": "OK", "loading": "Laster…", "error": "Noe gikk galt", "search": "Søk" },
   "auth": {
     "login_title": "Logg inn",
@@ -178,7 +190,8 @@
     "est_none": "—",
     "est_hint": "Logg runder for å se estimater",
     "glass": "Glass",
-    "empty": "Ingen oppskrifter her ennå"
+    "empty": "Ingen oppskrifter her ennå",
+    "fridge_ok": "Fra kjøleskapet"
   },
   "custom": {
     "title": "Egen vare",
@@ -220,7 +233,8 @@
     "notfound_title": "Denne lenken finnes ikke eller er revokert",
     "empty": "Kjelleren er tom",
     "qr_alt": "QR-kode for delt lenke",
-    "qr_hint": "Skann med kameraet — gjestene trenger ikke installere noe"
+    "qr_hint": "Skann med kameraet — gjestene trenger ikke installere noe",
+    "fridge": "I kjøleskapet"
   },
   "settings": {
     "title": "Innstillinger",

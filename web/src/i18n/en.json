@@ -1,6 +1,18 @@
 {
   "app": { "name": "VinKjeller" },
   "nav": { "cellar": "Cellar", "brew": "Brew", "drinks": "Drinks", "scan": "Scan", "settings": "Settings" },
+  "menu": { "title": "More", "fridge": "Fridge", "settings": "Settings" },
+  "fridge": {
+    "title": "Fridge",
+    "hint": "The non-bottle stuff: juice, soda, water, sugar. Toggle it off when it's used up — then it no longer counts in the drinks.",
+    "add_ph": "e.g. Orange juice, Water, Sugar…",
+    "add": "Add",
+    "empty": "Nothing in the fridge yet. Add juice, soda, water, sugar — drinks will count them as available.",
+    "on": "Available",
+    "off": "Used up",
+    "dupe": "Already in the fridge",
+    "toggle": "available"
+  },
   "common": { "cancel": "Cancel", "close": "Close", "save": "Save", "ok": "OK", "loading": "Loading…", "error": "Something went wrong", "search": "Search" },
   "auth": {
     "login_title": "Sign in",
@@ -178,7 +190,8 @@
     "est_none": "—",
     "est_hint": "Log rounds to see estimates",
     "glass": "Glass",
-    "empty": "No recipes here yet"
+    "empty": "No recipes here yet",
+    "fridge_ok": "From the fridge"
   },
   "custom": {
     "title": "Custom item",
@@ -220,7 +233,8 @@
     "notfound_title": "This link does not exist or was revoked",
     "empty": "The cellar is empty",
     "qr_alt": "QR code for the share link",
-    "qr_hint": "Scan with the camera — guests don't need to install anything"
+    "qr_hint": "Scan with the camera — guests don't need to install anything",
+    "fridge": "In the fridge"
   },
   "settings": {
     "title": "Settings",

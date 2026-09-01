@@ -340,6 +340,7 @@ export function registerRoutes(app) {
         customName: i.customName, customType: i.customType,
         customAbv: i.customAbv, customVolumeCl: i.customVolumeCl,
         price: i.price, photoUrl: i.photoUrl, note: i.note, brewInfo: i.brewInfo,
+        tag: i.tag, fridgeOn: i.fridgeOn,
         addedAt: i.addedAt,
         product: i.source === 'vm' ? prodMap.get(i.vmProductId) ?? null : null,
         popularity: null,
@@ -370,7 +371,10 @@ export function registerRoutes(app) {
   app.post('/api/me/cellar', async (req, reply) => {
     const u = requireUser(req, reply); if (!u) return;
     const b = req.body ?? {};
-    const source = b.source === 'custom' ? 'custom' : 'vm';
+    // Fridge items (orange juice, water, sugar, …) are cellar items with a
+    // toggle, not bottles — same table, so guests/shares see them too.
+    const isFridge = b.fridge === true;
+    const source = isFridge || b.source === 'custom' ? 'custom' : 'vm';
     if (source === 'vm' && !b.vmProductId) return reply.code(400).send({ error: 'bad_request' });
     if (source === 'custom' && !b.customName) return reply.code(400).send({ error: 'bad_request' });
     const cellarId = resolveCellarId(u, b.cellarId);
@@ -394,7 +398,8 @@ export function registerRoutes(app) {
         brew,
         now(),
         validDate(b.boughtAt),
-        b.tag ? String(b.tag).trim().slice(0, 40) : null
+        b.tag ? String(b.tag).trim().slice(0, 40) : null,
+        isFridge ? 1 : null
       );
       ids.push(id);
     }
@@ -423,6 +428,10 @@ export function registerRoutes(app) {
     // explicit tag change (including clearing it) — see updateTag comment
     if (b.tag !== undefined) {
       cellar.updateTag.run(b.tag ? String(b.tag).trim().slice(0, 40) : null, req.params.id);
+    }
+    // fridge toggle (only for items that are fridge items)
+    if (b.fridgeOn !== undefined && item.fridgeOn !== null) {
+      cellar.setFridgeOn.run(b.fridgeOn ? 1 : 0, req.params.id);
     }
     reply.send({ ok: true });
   });

@@ -62,6 +62,7 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
 
 ## [Unreleased]
 ### Added
+- **🧊 Kjøleskap** — alt som ikke står i flasker (appelsinjuis, vann, sukker, brus …) har nå sin egen liste, åpnes fra waffle-menyen (▦-knappen i toppen — ⚙️-innstillingene ligger der også nå). Hvert element er en enkel toggle: på plass / brukt opp. Drikkesjekken teller et påslått element som tilgjengelig — uten mengdematikk, saft regnes som uendelig. Gjestene på delt lenke ser kjøleskapet som etiketter over flaskene, og kjellermend ser det i sin egen meny. Bakenden er uendret i prinsippet: kjøleskapet er kjellerens egne poster, så det deler seg naturlig.
 - **🔗 Koble ukjent strekkode til kjelleren** — skanner du en strekkode som appen ikke kjenner (f.eks. flasker lagt til via «Legg til» uten at strekkoden ble lært), kan du nå trykke «Koble til kjelleren» og peke på flasken. Strekkoden huskes deretter (globalt) og slår opp med det samme neste gang.
 - **Drikke-type på flasker** — i flaskedialogen kan du nå merke en flaske som f.eks. «Vodka», «Rum» eller «Tequila». Drikkesjekken ser på typen i tillegg til navnet, så f.eks. Grey Goose teller som vodka selv om navnet aldri nevner det.
 - **«Legg til» flyter videre** — etter å ha lagt til en vinmonopol-flaske holder dialogen åpen og starter på nytt (søkefeltet er ryddet og ferdig til neste produkts søk) — så man kan legge til hele hyllen uten å lete etter knappen mellom hver flaske.

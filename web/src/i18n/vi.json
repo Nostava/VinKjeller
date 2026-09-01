@@ -1,6 +1,18 @@
 {
   "app": { "name": "VinKjeller" },
   "nav": { "cellar": "Hầm rượu", "brew": "Bia nha", "drinks": "Đồ uống", "scan": "Quét", "settings": "Cài đặt" },
+  "menu": { "title": "Thêm…", "fridge": "Tủ lạnh", "settings": "Cài đặt" },
+  "fridge": {
+    "title": "Tủ lạnh",
+    "hint": "Những thứ không để trong chai: nước ép, nước ngọt, nước, đường. Tắt đi khi hết — khi đó nó không tính trong các đồ uống.",
+    "add_ph": "VD: Nước cam, Nước, Đường…",
+    "add": "Thêm",
+    "empty": "Chưa có gì trong tủ lạnh. Thêm nước ép, nước ngọt, nước, đường — đồ uống sẽ tính là có sẵn.",
+    "on": "Có sẵn",
+    "off": "Hết rồi",
+    "dupe": "Đã có trong tủ lạnh",
+    "toggle": "có sẵn"
+  },
   "common": { "cancel": "Hủy", "close": "Đóng", "save": "Lưu", "ok": "OK", "loading": "Đang tải…", "error": "Đã có lỗi xảy ra", "search": "Tìm" },
   "auth": {
     "login_title": "Đăng nhập",
@@ -174,7 +186,8 @@
     "est_none": "—",
     "est_hint": "Ghi nhận các ly để xem ước tính",
     "glass": "Ly",
-    "empty": "Chưa có công thức"
+    "empty": "Chưa có công thức",
+    "fridge_ok": "Từ tủ lạnh"
   },
   "custom": {
     "title": "Sản phẩm riêng",
@@ -216,7 +229,8 @@
     "notfound_title": "Link này không tồn tại hoặc đã bị huỷ",
     "empty": "Hầm rượu trống",
     "qr_alt": "Mã QR cho link chia sẻ",
-    "qr_hint": "Quét bằng camera — khách không cần cài gì"
+    "qr_hint": "Quét bằng camera — khách không cần cài gì",
+    "fridge": "Trong tủ lạnh"
   },
   "settings": {
     "title": "Cài đặt",

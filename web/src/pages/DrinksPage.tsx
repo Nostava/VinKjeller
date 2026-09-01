@@ -188,7 +188,10 @@ function RecipeCard({ status, fav, onMake, onFav }: {
               {i.ok ? '✅' : '❌'} {t(i.ing.nameKey)}
               <span className="muted"> · {i.ing.cl} cl{i.ing.optional ? ` (${t('drinks.optional')})` : ''}</span>
             </span>
-            <span className="muted">{i.matches.length}</span>
+            {/* 🧊 = satisfied by an ON fridge item (no bottles involved) */}
+            <span className="muted" title={i.fridge ? t('drinks.fridge_ok') : undefined}>
+              {i.fridge ? '🧊' : i.matches.length}
+            </span>
           </div>
         ))}
       </div>
@@ -213,7 +216,8 @@ function MakeRoundDialog({ status, onClose, onDone, showToast }: {
   const { t } = useTranslation();
   const r = status.recipe;
   const name = r.nameKey.startsWith('recipe.') ? t(r.nameKey) : r.nameKey;
-  const required = status.ingredients.filter((i) => !i.ing.optional && i.ing.cl > 0);
+  // fridge-satisfied ingredients need no bottle pick — the juice is there
+  const required = status.ingredients.filter((i) => !i.ing.optional && i.ing.cl > 0 && !i.fridge);
   const [picks, setPicks] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
     for (const i of required) init[i.ing.nameKey] = i.matches[0]?.id ?? '';

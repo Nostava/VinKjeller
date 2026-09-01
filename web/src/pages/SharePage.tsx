@@ -57,15 +57,51 @@ export default function SharePage({ token }: { token: string }) {
           </p>
         )}
         <p style={{ fontSize: 14 }}>{t('share.note')}</p>
-        {data.items.length === 0 ? (
-          <Alert data-color="info">{t('share.empty')}</Alert>
-        ) : (
-          <div className="bottle-grid">
-            {data.items.map((it, idx) => (
-              <GuestCard key={it.id} item={it} index={idx} onClick={() => setSel(it)} />
-            ))}
-          </div>
-        )}
+        {(() => {
+          // fridge items are toggles, not bottles — shown as chips above the grid
+          const fridge = data.items
+            .filter((i) => i.fridgeOn !== null && i.fridgeOn !== undefined)
+            .sort((a, b) => (a.customName ?? '').localeCompare(b.customName ?? '', 'nb'));
+          const bottles = data.items.filter((i) => i.fridgeOn === null || i.fridgeOn === undefined);
+          if (fridge.length === 0 && bottles.length === 0) {
+            return <Alert data-color="info">{t('share.empty')}</Alert>;
+          }
+          return (
+            <>
+              {fridge.length > 0 && (
+                <div className="mb">
+                  <Heading level={2} data-size="md">🧊 {t('share.fridge')}</Heading>
+                  <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
+                    {fridge.map((f) => {
+                      const on = f.fridgeOn === 1;
+                      return (
+                        <span
+                          key={f.id}
+                          title={on ? t('fridge.on') : t('fridge.off')}
+                          style={{
+                            border: '1px solid var(--ds-color-border-subtle)', borderRadius: 999,
+                            padding: '4px 12px', fontSize: 13,
+                            opacity: on ? 1 : 0.55,
+                            textDecoration: on ? 'none' : 'line-through',
+                          }}
+                        >
+                          {f.customName}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {bottles.length > 0 && (
+                <div className="bottle-grid">
+                  {bottles.map((it, idx) => (
+                    <GuestCard key={it.id} item={it} index={idx} onClick={() => setSel(it)} />
+                  ))}
+                </div>
+              )}
+            </>
+          );
+        })()}
       </main>
 
       {sel && (

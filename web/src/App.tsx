@@ -9,9 +9,11 @@ import ScanPage from './pages/ScanPage';
 import BrewPage from './pages/BrewPage';
 import SettingsPage from './pages/SettingsPage';
 import SharePage from './pages/SharePage';
-import { IconBrew, IconCellar, IconDrinks, IconScan, IconSettings } from './components/icons';
+import FridgePage from './pages/FridgePage';
+import { IconBrew, IconCellar, IconDrinks, IconScan, IconWaffle } from './components/icons';
+import { Dialog, Heading } from '@digdir/designsystemet-react';
 
-export type Tab = 'cellar' | 'drinks' | 'scan' | 'settings' | 'brew';
+export type Tab = 'cellar' | 'drinks' | 'scan' | 'settings' | 'brew' | 'fridge';
 
 // Party share links: /j/<token> is a public read-only cellar view (no login).
 const shareMatch = () => window.location.pathname.match(/^\/j\/([a-z0-9]{8,})$/i);
@@ -29,6 +31,7 @@ export default function App() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Loads cellars, keeps the active one valid, then loads its items.
   // `cid` is the preferred cellar id. When none is (yet) chosen, prefer a
@@ -118,21 +121,43 @@ export default function App() {
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
           <span className="muted">{user.name ?? user.email}</span>
           <button
-            onClick={() => setTab('settings')}
-            aria-label={t('nav.settings')}
-            title={t('nav.settings')}
+            onClick={() => setMenuOpen(true)}
+            aria-label={t('menu.title')}
+            title={t('menu.title')}
             className="header-icon-btn"
           >
-            <IconSettings />
+            <IconWaffle />
           </button>
         </span>
       </header>
+
+      {/* waffle menu: settings + fridge (kept out of the bottom nav on purpose) */}
+      <Dialog open={menuOpen} onClose={() => setMenuOpen(false)}>
+        <Heading level={2} data-size="lg">{t('menu.title')}</Heading>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }} className="mt">
+          <button
+            onClick={() => { setMenuOpen(false); setTab('fridge'); }}
+            style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16, background: 'var(--ds-color-background-subtle)', cursor: 'pointer', font: 'inherit', textAlign: 'center' }}
+          >
+            <div style={{ fontSize: 28 }} aria-hidden>🧊</div>
+            <div style={{ fontWeight: 600, marginTop: 6 }}>{t('menu.fridge')}</div>
+          </button>
+          <button
+            onClick={() => { setMenuOpen(false); setTab('settings'); }}
+            style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16, background: 'var(--ds-color-background-subtle)', cursor: 'pointer', font: 'inherit', textAlign: 'center' }}
+          >
+            <div style={{ fontSize: 28 }} aria-hidden>⚙️</div>
+            <div style={{ fontWeight: 600, marginTop: 6 }}>{t('menu.settings')}</div>
+          </button>
+        </div>
+      </Dialog>
       <main className="app-main">
         <div className="tab-page" key={tab}>
           {tab === 'cellar' && <CellarPage items={items} cellars={cellars} cellarId={cellarId} onSwitchCellar={switchCellar} onCellarsChanged={refresh} storeId={user.storeId} onRefresh={refresh} showToast={showToast} goScan={() => setTab('scan')} />}
           {tab === 'brew' && <BrewPage items={items} onRefresh={refresh} showToast={showToast} />}
           {tab === 'drinks' && <DrinksPage items={items} recipes={recipes} rounds={rounds} onRefresh={refresh} showToast={showToast} />}
           {tab === 'scan' && <ScanPage items={items} storeId={user.storeId} onRefresh={refresh} showToast={showToast} />}
+          {tab === 'fridge' && <FridgePage items={items} onRefresh={refresh} showToast={showToast} />}
           {tab === 'settings' && <SettingsPage user={user} onLogout={() => setUser(null)} showToast={showToast} onSaved={(u) => setUser(u)} />}
         </div>
       </main>

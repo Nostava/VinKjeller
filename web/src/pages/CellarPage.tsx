@@ -34,23 +34,27 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
   const [showShare, setShowShare] = useState(false);
   const activeCellar = cellars.find((c) => c.id === cellarId) ?? null;
 
+  // Fridge items (toggles, not bottles) live in their own view — keep the
+  // cellar grid about bottles only.
+  const bottles = items.filter((i) => i.fridgeOn === null || i.fridgeOn === undefined);
+
   // Filter options derived from what's actually in the cellar (they "light up"
   // as data becomes available — thin-mode products have no category/country).
   const cats = useMemo(
-    () => [...new Set(items.map((i) => i.product?.category ?? (i.source === 'custom' ? i.customType : null)).filter(Boolean) as string[])]
+    () => [...new Set(bottles.map((i) => i.product?.category ?? (i.source === 'custom' ? i.customType : null)).filter(Boolean) as string[])]
       .sort((a, b) => a.localeCompare(b, 'nb')),
-    [items]
+    [bottles]
   );
   const countries = useMemo(
-    () => [...new Set(items.map((i) => i.product?.country).filter(Boolean) as string[])]
+    () => [...new Set(bottles.map((i) => i.product?.country).filter(Boolean) as string[])]
       .sort((a, b) => a.localeCompare(b, 'nb')),
-    [items]
+    [bottles]
   );
   const hasFilters = !!(cat || country);
 
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    const list = items.filter((it) => {
+    const list = bottles.filter((it) => {
       if (q) {
         const hay = [it.customName, it.product?.name, it.product?.longName, it.product?.category, it.product?.country]
           .filter(Boolean).join(' ').toLowerCase();
@@ -69,7 +73,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
       case 'name': return [...list].sort((a, b) => label(a).localeCompare(label(b), 'nb'));
       default: return [...list].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
     }
-  }, [items, filter, cat, country, sort]);
+  }, [bottles, filter, cat, country, sort]);
 
   return (
     <div>
@@ -94,7 +98,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
         <span className="spacer" />
       </div>
 
-      {items.length > 0 && (
+      {bottles.length > 0 && (
         <div className="row mb" style={{ flexWrap: 'wrap' }}>
           <Input
             value={filter}
@@ -111,7 +115,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
         </div>
       )}
 
-      {(cats.length > 0 || countries.length > 0) && items.length > 0 && (
+      {(cats.length > 0 || countries.length > 0) && bottles.length > 0 && (
         <div className="row mb" style={{ flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           {cats.length > 0 && (
             <Select value={cat} onChange={(e) => setCat(e.target.value)} aria-label={t('cellar.filter_category')} style={{ width: 'auto', maxWidth: 220 }}>
@@ -131,7 +135,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
         </div>
       )}
 
-      {items.length === 0 ? (
+      {bottles.length === 0 ? (
         <>
           <Alert data-color="info">
             {t('cellar.empty')}
@@ -218,7 +222,7 @@ function pseudoItem(p: Product): CellarItem {
     source: 'vm',
     vmProductId: p.vmProductId,
     customName: null, customType: null, customAbv: null, customVolumeCl: null,
-    price: p.price, photoUrl: null, note: null, brewInfo: null, boughtAt: null, tag: null,
+    price: p.price, photoUrl: null, note: null, brewInfo: null, boughtAt: null, tag: null, fridgeOn: null,
     addedAt: new Date().toISOString(), removedAt: null, removedReason: null,
     product: p,
   };
