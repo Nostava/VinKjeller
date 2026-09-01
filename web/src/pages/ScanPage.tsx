@@ -150,10 +150,10 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
 
   // ---------- label (OCR) flow — phase 1: identify, no saving yet ----------
 
-  function captureFrame(): string | null {
+  function captureFrame(): HTMLCanvasElement | null {
     const video = videoRef.current;
     if (!video || video.readyState < 2 || !video.videoWidth) return null;
-    // Downscale: label text is large, 1400px is plenty and OCR stays fast.
+    // Downscale: label text is large, 1400px is plenty (OCR upscales itself).
     const scale = Math.min(1, 1400 / video.videoWidth);
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(video.videoWidth * scale);
@@ -161,20 +161,21 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/jpeg', 0.9);
+    return canvas;
   }
 
   async function readLabel() {
-    const img = captureFrame();
-    if (!img) {
+    const canvas = captureFrame();
+    if (!canvas) {
       showToast(t('common.error'));
       return;
     }
+    const img = canvas.toDataURL('image/jpeg', 0.9); // thumbnail for the result card
     closeCamera(); // free the camera while OCR runs
     setLabel({ phase: 'reading', img, progress: 0 });
     let ocr: OcrResult;
     try {
-      ocr = await ocrImage(img, (p) =>
+      ocr = await ocrImage(canvas, (p) =>
         setLabel((l) => (l && l.phase === 'reading' ? { ...l, progress: p } : l)),
       );
     } catch {

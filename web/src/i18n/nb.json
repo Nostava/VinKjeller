@@ -62,7 +62,7 @@
     "stop": "Stopp",
     "hint": "Hold strekkoden inne i rammene",
     "read_label": "Les etikett",
-    "label_hint": "Hold kameraet mot navnet på etiketten",
+    "label_hint": "Hold kameraet flatt mot etiketten med jevn lys — navnet bør fylle mest mulig av rammen",
     "capture": "Ta bilde",
     "label_reading": "Leser etikett…",
     "label_matches": "Funnet {n} treff for «{q}»",

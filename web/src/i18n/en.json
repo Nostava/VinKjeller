@@ -62,7 +62,7 @@
     "stop": "Stop",
     "hint": "Hold the barcode within the frame",
     "read_label": "Read label",
-    "label_hint": "Point the camera at the name on the label",
+    "label_hint": "Hold the camera flat against the label, even light — let the name fill most of the frame",
     "capture": "Capture",
     "label_reading": "Reading label…",
     "label_matches": "{n} match(es) for “{q}”",

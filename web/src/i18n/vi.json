@@ -61,7 +61,7 @@
     "stop": "Dừng",
     "hint": "Giữ mã vạch trong khung",
     "read_label": "Đọc nhãn",
-    "label_hint": "Đưa camera về phía tên sản phẩm trên nhãn",
+    "label_hint": "Giữ camera song song với nhãn, ánh sáng đều — để tên sản phẩm chiếm phần lớn khung hình",
     "capture": "Chụp",
     "label_reading": "Đang đọc nhãn…",
     "label_matches": "{n} kết quả cho “{q}”",
