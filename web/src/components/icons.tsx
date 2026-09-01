@@ -27,6 +27,17 @@ export function IconScan() {
   );
 }
 
+export function IconBrew() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path {...p} d="M7 9h9v10.5A1.5 1.5 0 0 1 14.5 21h-6A1.5 1.5 0 0 1 7 19.5V9Z" />
+      <path {...p} d="M16 11h1.5a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H16" />
+      <path {...p} d="M8 9V5.5A1.5 1.5 0 0 1 9.5 4h5A1.5 1.5 0 0 1 16 5.5V9" />
+      <path {...p} d="M10 12.5v4M13 12.5v4" />
+    </svg>
+  );
+}
+
 export function IconSettings() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">

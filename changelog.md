@@ -61,6 +61,9 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
   service worker og app-HTML på begge subdomainene.
 
 ## [Unreleased]
+### Added
+- **Delte kjellerer** — kjelleren er nå en egen ting som brukere kan være med i (eier/medlem). Velgeren «🍷 <kjeller> ▾» øverst i Kjeller-visningen bytter mellom kjellerene dine, lager nye, og (som eier) inviterer medlemmer med e-post/brukernavn, fjerner dem, endrer navn og sletter kjelleren. Eksisterende flasker flyttes automatisk til en ny «Hjemmekjeller» ved oppstart. Produktlag (produkter, lagrede strekkoder) er fortsatt universelt — det deles ikke, det er bare der for alle.
+- **🍺 Hjemmebryg** — ny fane for bryggsaker: navn, type, alkohol %, OG/FG, IBU, bryggedato (med «X dager siden»), flaskevolum, karbonering, malt, humle, gær og merknad. Vises som kort i Bryg-visningen (og i kjelleren med 🍺-merke). Redigeres ved å trykke på kortet.
 ### Fixed
 - **Overspill i vinkjeller-kort** — Designsystemet har ingen global `box-sizing`-reset, så `width:100% + padding`-elementer (bilde i kortet) ble 16 px bredere enn kortet, og hele kortet (bilde + «På hyllen …»-tag) stakk ut av rutenettet. Global `border-box`-reset lagt til.
 - **Gamle PWA-bundle etter deploy** — service worker brukte `prompt`-modus, så datamaskiner kunne ligge med gammel JS (f.eks. 🍾-bilde i stedet for ekte produktbilde). Byttet til `autoUpdate`: nye bundle aktiveres automatisk ved neste besøk.

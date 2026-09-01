@@ -29,12 +29,46 @@ export type CellarItem = {
   price: number | null;
   photoUrl: string | null;
   note: string | null;
+  // JSON: homebrew batch details (style, og, fg, ibu, malt, hops, yeast, …)
+  brewInfo: string | null;
   addedAt: string;
   removedAt: string | null;
   removedReason: string | null;
   product?: Product | null;
   popularity?: { liters: number; items: number } | null;
 };
+
+export type Cellar = {
+  id: string;
+  name: string;
+  ownerUserId: string;
+  createdAt: string;
+  role: 'owner' | 'member';
+  itemCount: number;
+};
+
+/** Homebrew batch details stored as JSON in CellarItem.brewInfo. */
+export type BrewInfo = {
+  style?: string | null;
+  og?: number | null;
+  fg?: number | null;
+  ibu?: number | null;
+  malt?: string | null;
+  hops?: string | null;
+  yeast?: string | null;
+  carbonation?: 'light' | 'medium' | 'full' | null;
+  brewDate?: string | null; // YYYY-MM-DD
+};
+
+export function parseBrewInfo(raw: string | null | undefined): BrewInfo | null {
+  if (!raw) return null;
+  try {
+    const o = JSON.parse(raw);
+    return o && typeof o === 'object' ? o : null;
+  } catch {
+    return null;
+  }
+}
 
 export type Ingredient = {
   nameKey: string;

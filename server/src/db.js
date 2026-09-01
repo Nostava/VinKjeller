@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
+import { uid as newId } from './auth.js';
 
 fs.mkdirSync(path.dirname(config.dbFile), { recursive: true });
 
@@ -45,6 +46,23 @@ CREATE TABLE IF NOT EXISTS cellar_items (
   removedReason TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_cellar_user ON cellar_items(userId, removedAt);
+
+-- A cellar is a shared shelf: users join it with a role (owner/member).
+-- Items belong to a cellar, not to a user (userId = who added it).
+CREATE TABLE IF NOT EXISTS cellars (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  ownerUserId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  createdAt TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS cellar_members (
+  cellarId TEXT NOT NULL REFERENCES cellars(id) ON DELETE CASCADE,
+  userId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('owner','member')),
+  joinedAt TEXT NOT NULL,
+  PRIMARY KEY (cellarId, userId)
+);
+-- (index on cellar_items.cellarId is created in migrate(), after the column exists)
 
 -- Vinmonopol product cache (ToS: purge on demand)
 CREATE TABLE IF NOT EXISTS products_cache (
@@ -123,6 +141,33 @@ CREATE TABLE IF NOT EXISTS gtin_map (
 
 const now = () => new Date().toISOString();
 
+// ---------- migrations (idempotent, run on every start) ----------
+// Must run before the prepared statements below: SQLite validates column
+// names at prepare time.
+function migrate() {
+  const cols = new Set(db.prepare(`PRAGMA table_info(cellar_items)`).all().map((r) => r.name));
+  if (!cols.has('cellarId')) db.exec(`ALTER TABLE cellar_items ADD COLUMN cellarId TEXT REFERENCES cellars(id) ON DELETE CASCADE`);
+  if (!cols.has('brewInfo')) db.exec(`ALTER TABLE cellar_items ADD COLUMN brewInfo TEXT`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_cellar_items_cellar ON cellar_items(cellarId, removedAt)`);
+  // every user gets a home cellar; their existing items move there
+  const insC = db.prepare(`INSERT INTO cellars (id,name,ownerUserId,createdAt) VALUES (?,?,?,?)`);
+  const insM = db.prepare(`INSERT INTO cellar_members (cellarId,userId,role,joinedAt) VALUES (?,?,?,?)`);
+  const hasHome = db.prepare(`SELECT id FROM cellars WHERE ownerUserId = ? LIMIT 1`);
+  const move = db.prepare(`UPDATE cellar_items SET cellarId = ? WHERE userId = ? AND cellarId IS NULL`);
+  for (const { id: uid } of db.prepare(`SELECT id FROM users`).all()) {
+    const home = hasHome.get(uid);
+    if (home) {
+      move.run(home.id, uid);
+      continue;
+    }
+    const cid = newId();
+    insC.run(cid, 'Hjemmekjeller', uid, now());
+    insM.run(cid, uid, 'owner', now());
+    move.run(cid, uid);
+  }
+}
+migrate();
+
 // ---------- users & sessions ----------
 export const users = {
   create: db.prepare(`INSERT INTO users (id, email, passHash, name, lang) VALUES (?,?,?,?,?)`),
@@ -142,12 +187,33 @@ export const sessions = {
 
 // ---------- cellar ----------
 export const cellar = {
-  insert: db.prepare(`INSERT INTO cellar_items (id,userId,source,vmProductId,customName,customType,customAbv,customVolumeCl,price,photoUrl,note,addedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`),
-  list: db.prepare(`SELECT * FROM cellar_items WHERE userId = ? AND removedAt IS NULL ORDER BY addedAt DESC`),
-  one: db.prepare(`SELECT * FROM cellar_items WHERE id = ? AND userId = ?`),
-  update: db.prepare(`UPDATE cellar_items SET customName=COALESCE(?,customName), customType=COALESCE(?,customType), customAbv=COALESCE(?,customAbv), customVolumeCl=COALESCE(?,customVolumeCl), price=COALESCE(?,price), photoUrl=COALESCE(?,photoUrl), note=COALESCE(?,note) WHERE id=? AND userId=?`),
-  remove: db.prepare(`UPDATE cellar_items SET removedAt = ?, removedReason = ? WHERE id = ? AND userId = ? AND removedAt IS NULL`),
-  history: db.prepare(`SELECT * FROM cellar_items WHERE userId = ? ORDER BY addedAt DESC LIMIT 200`),
+  insert: db.prepare(`INSERT INTO cellar_items (id,userId,cellarId,source,vmProductId,customName,customType,customAbv,customVolumeCl,price,photoUrl,note,brewInfo,addedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`),
+  list: db.prepare(`SELECT * FROM cellar_items WHERE cellarId = ? AND removedAt IS NULL ORDER BY addedAt DESC`),
+  one: db.prepare(`SELECT * FROM cellar_items WHERE id = ?`),
+  update: db.prepare(`UPDATE cellar_items SET customName=COALESCE(?,customName), customType=COALESCE(?,customType), customAbv=COALESCE(?,customAbv), customVolumeCl=COALESCE(?,customVolumeCl), price=COALESCE(?,price), photoUrl=COALESCE(?,photoUrl), note=COALESCE(?,note), brewInfo=COALESCE(?,brewInfo) WHERE id=?`),
+  remove: db.prepare(`UPDATE cellar_items SET removedAt = ?, removedReason = ? WHERE id = ? AND removedAt IS NULL`),
+  history: db.prepare(`SELECT * FROM cellar_items WHERE cellarId = ? ORDER BY addedAt DESC LIMIT 200`),
+};
+
+export const cellars = {
+  insert: db.prepare(`INSERT INTO cellars (id,name,ownerUserId,createdAt) VALUES (?,?,?,?)`),
+  byId: db.prepare(`SELECT * FROM cellars WHERE id = ?`),
+  // first cellar the user belongs to (by creation order) — the fallback
+  homeOf: db.prepare(`SELECT c.* FROM cellars c JOIN cellar_members m ON m.cellarId = c.id WHERE m.userId = ? ORDER BY c.createdAt LIMIT 1`),
+  forUser: db.prepare(`SELECT c.id, c.name, c.ownerUserId, c.createdAt, m.role,
+      (SELECT COUNT(*) FROM cellar_items i WHERE i.cellarId = c.id AND i.removedAt IS NULL) AS itemCount
+    FROM cellars c JOIN cellar_members m ON m.cellarId = c.id WHERE m.userId = ? ORDER BY c.createdAt`),
+  remove: db.prepare(`DELETE FROM cellars WHERE id = ? AND ownerUserId = ?`),
+  rename: db.prepare(`UPDATE cellars SET name = ? WHERE id = ? AND ownerUserId = ?`),
+};
+
+export const cellarMembers = {
+  insert: db.prepare(`INSERT INTO cellar_members (cellarId,userId,role,joinedAt) VALUES (?,?,?,?)`),
+  remove: db.prepare(`DELETE FROM cellar_members WHERE cellarId = ? AND userId = ?`),
+  role: db.prepare(`SELECT role FROM cellar_members WHERE cellarId = ? AND userId = ?`),
+  list: db.prepare(`SELECT m.userId, u.name, u.email, m.role
+    FROM cellar_members m JOIN users u ON u.id = m.userId
+    WHERE m.cellarId = ? ORDER BY (m.role <> 'owner'), u.name`),
 };
 
 // ---------- products cache ----------

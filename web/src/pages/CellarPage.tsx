@@ -1,17 +1,21 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Alert, Button, Dialog, Heading, Label, Link, Radio, Select, Spinner, Tabs, Tag,
 } from '@digdir/designsystemet-react';
 import { Input } from '@digdir/designsystemet-react';
 import { api } from '../api';
-import type { CellarItem, Product } from '../types';
+import type { Cellar, CellarItem, Product } from '../types';
 import { BottleThumb, CustomItemForm, ProductFacts, StockLine, useDebounce } from '../components/ui';
 
 type SortKey = 'recent' | 'shelf' | 'name' | 'price';
 
-export default function CellarPage({ items, storeId, onRefresh, showToast, goScan }: {
+export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, onCellarsChanged, storeId, onRefresh, showToast, goScan }: {
   items: CellarItem[];
+  cellars: Cellar[];
+  cellarId: string | null;
+  onSwitchCellar: (id: string) => void;
+  onCellarsChanged: () => void;
   storeId: string | null;
   onRefresh: () => Promise<void>;
   showToast: (m: string) => void;
@@ -26,6 +30,8 @@ export default function CellarPage({ items, storeId, onRefresh, showToast, goSca
   const [sort, setSort] = useState<SortKey>('recent');
   const [selected, setSelected] = useState<CellarItem | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [showPick, setShowPick] = useState(false);
+  const activeCellar = cellars.find((c) => c.id === cellarId) ?? null;
 
   // Filter options derived from what's actually in the cellar (they "light up"
   // as data becomes available — thin-mode products have no category/country).
@@ -75,8 +81,21 @@ export default function CellarPage({ items, storeId, onRefresh, showToast, goSca
 
   return (
     <div>
-      <div className="row mb">
+      <div className="row mb" style={{ flexWrap: 'wrap' }}>
         <Heading level={1} data-size="lg">{t('cellar.title')}</Heading>
+        {activeCellar && (
+          <button
+            onClick={() => setShowPick(true)}
+            style={{
+              border: '1px solid var(--ds-color-border-subtle)', borderRadius: 999, padding: '4px 12px',
+              background: 'var(--ds-color-background-subtle)', color: 'inherit', cursor: 'pointer', font: 'inherit', fontSize: 13,
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+            }}
+          >
+            🍷 {activeCellar.name}
+            <span className="muted" aria-hidden>▾</span>
+          </button>
+        )}
         <span className="spacer" />
         <span className="muted">{t('cellar.value')}: <strong>{Math.round(totalValue)} kr</strong></span>
       </div>
@@ -153,6 +172,18 @@ export default function CellarPage({ items, storeId, onRefresh, showToast, goSca
         />
       </Dialog>
 
+      {activeCellar && (
+        <Dialog open={showPick} onClose={() => setShowPick(false)}>
+          <CellarPicker
+            cellars={cellars}
+            cellarId={cellarId}
+            onSwitch={(id) => { onSwitchCellar(id); setShowPick(false); }}
+            onChanged={onCellarsChanged}
+            showToast={showToast}
+          />
+        </Dialog>
+      )}
+
       {selected && (
         <Dialog open onClose={() => setSelected(null)}>
           <BottleDialog
@@ -177,7 +208,7 @@ function pseudoItem(p: Product): CellarItem {
     source: 'vm',
     vmProductId: p.vmProductId,
     customName: null, customType: null, customAbv: null, customVolumeCl: null,
-    price: p.price, photoUrl: null, note: null,
+    price: p.price, photoUrl: null, note: null, brewInfo: null,
     addedAt: new Date().toISOString(), removedAt: null, removedReason: null,
     product: p,
   };
@@ -187,6 +218,7 @@ function BottleCard({ item, index, onClick }: { item: CellarItem; index: number;
   const { t } = useTranslation();
   const name = item.customName ?? item.product?.name ?? t('bottle.no_data');
   const sub = item.customType ?? item.product?.subCategory ?? item.product?.category ?? '';
+  const isBrew = !!item.brewInfo;
   const months = Math.max(0, Math.floor((Date.now() - new Date(item.addedAt).getTime()) / (30.44 * 86400000)));
   const pop = item.popularity;
 
@@ -201,7 +233,7 @@ function BottleCard({ item, index, onClick }: { item: CellarItem; index: number;
       } as React.CSSProperties}
     >
       <BottleThumb item={item} />
-      <strong style={{ fontSize: 14, lineHeight: 1.3 }}>{name}</strong>
+      <strong style={{ fontSize: 14, lineHeight: 1.3 }}>{isBrew ? '🍺 ' : ''}{name}</strong>
       <span className="muted" style={{ fontSize: 12 }}>{sub}</span>
       <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
         <Tag variant="outline">{t('cellar.shelf')} {t('cellar.shelf_months', { count: months })}</Tag>
@@ -406,6 +438,180 @@ function BottleDialog({ item, storeId, onClose, onTakenOut }: {
           <Button variant="tertiary" onClick={onClose}>{t('common.close')}</Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Pick / create / manage a cellar: switch between your cellars, invite
+ *  members (owner), rename, delete. */
+function CellarPicker({ cellars, cellarId, onSwitch, onChanged, showToast }: {
+  cellars: Cellar[];
+  cellarId: string | null;
+  onSwitch: (id: string) => void;
+  onChanged: () => void;
+  showToast: (m: string) => void;
+}) {
+  const { t } = useTranslation();
+  const active = cellars.find((c) => c.id === cellarId) ?? null;
+  const isOwner = active?.role === 'owner';
+  const [newName, setNewName] = useState('');
+  const [invite, setInvite] = useState('');
+  const [rename, setRename] = useState('');
+  const [showRename, setShowRename] = useState(false);
+  const [members, setMembers] = useState<{ userId: string; name: string; role: 'owner' | 'member' }[] | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!isOwner || !active) return;
+    let live = true;
+    api.cellarMembers(active.id)
+      .then((r) => { if (live) setMembers(r.items); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, [active?.id, isOwner]);
+
+  const errText = (e: unknown): string => {
+    const m = e instanceof Error ? e.message : '';
+    if (m === 'no_such_user') return t('cellar.err_user');
+    if (m === 'not_owner') return t('cellar.err_owner');
+    return t('common.error');
+  };
+
+  async function create() {
+    const n = newName.trim();
+    if (!n) return;
+    setBusy(true);
+    try {
+      const r = await api.createCellar(n);
+      setNewName('');
+      onChanged();
+      onSwitch(r.id);
+    } catch (e) {
+      showToast(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function doInvite() {
+    const q = invite.trim();
+    if (!q || !active) return;
+    setBusy(true);
+    try {
+      const r = await api.inviteToCellar(active.id, q);
+      showToast(`${t('cellar.invited')}: ${r.name ?? q}`);
+      setInvite('');
+      setMembers(await api.cellarMembers(active.id).then((m) => m.items));
+    } catch (e) {
+      showToast(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function doRemoveMember(userId: string) {
+    if (!active) return;
+    setBusy(true);
+    try {
+      await api.removeFromCellar(active.id, userId);
+      setMembers(await api.cellarMembers(active.id).then((m) => m.items));
+    } catch (e) {
+      showToast(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function doRename() {
+    const n = rename.trim();
+    if (!n || !active) return;
+    setBusy(true);
+    try {
+      await api.renameCellar(active.id, n);
+      setShowRename(false);
+      onChanged();
+    } catch (e) {
+      showToast(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function doDelete() {
+    if (!active) return;
+    if (!window.confirm(t('cellar.delete_confirm', { name: active.name }))) return;
+    setBusy(true);
+    try {
+      await api.deleteCellar(active.id);
+      onChanged(); // App falls back to the remaining first cellar
+    } catch (e) {
+      showToast(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: 16 }}>
+      <Heading level={2} data-size="lg">{t('cellar.pick')}</Heading>
+
+      <div style={{ display: 'grid', gap: 6 }}>
+        {cellars.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => onSwitch(c.id)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', textAlign: 'left', font: 'inherit',
+              border: c.id === cellarId ? '2px solid var(--ds-color-accent-base-default)' : '1px solid var(--ds-color-border-subtle)',
+              borderRadius: 10, background: 'var(--ds-color-background-subtle)', color: 'inherit', cursor: 'pointer',
+            }}
+          >
+            <span aria-hidden>{c.id === cellarId ? '✓' : '🍷'}</span>
+            <span style={{ fontWeight: 600, flex: 1, overflowWrap: 'anywhere' }}>{c.name}</span>
+            <span className="muted" style={{ fontSize: 12 }}>{t(`cellar.count_${c.itemCount === 1 ? 'one' : 'other'}`, { count: c.itemCount })}</span>
+            <Tag variant="outline">{t(`cellar.role_${c.role}`)}</Tag>
+          </button>
+        ))}
+      </div>
+
+      <div className="row" style={{ gap: 8 }}>
+        <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t('cellar.name_ph')} aria-label={t('cellar.name_ph')} style={{ flex: 1 }} />
+        <Button variant="secondary" loading={busy} disabled={!newName.trim()} onClick={create}>＋ {t('cellar.create')}</Button>
+      </div>
+
+      {active && isOwner && (
+        <div style={{ display: 'grid', gap: 12, borderTop: '1px solid var(--ds-color-border-subtle)', paddingTop: 12 }}>
+          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <Heading level={3} data-size="sm">{t('cellar.members')}</Heading>
+            <div className="row" style={{ gap: 6 }}>
+              <Button variant="tertiary" onClick={() => { setShowRename(!showRename); setRename(active.name); }}>✏️ {t('cellar.rename')}</Button>
+              <Button variant="tertiary" loading={busy} onClick={doDelete}>🗑 {t('cellar.delete_short')}</Button>
+            </div>
+          </div>
+          {showRename && (
+            <div className="row" style={{ gap: 8 }}>
+              <Input value={rename} onChange={(e) => setRename(e.target.value)} aria-label={t('cellar.rename')} style={{ flex: 1 }} />
+              <Button variant="secondary" loading={busy} onClick={doRename}>{t('common.save')}</Button>
+            </div>
+          )}
+          <div className="row" style={{ gap: 8 }}>
+            <Input value={invite} onChange={(e) => setInvite(e.target.value)} placeholder={t('cellar.invite_ph')} aria-label={t('cellar.invite_ph')} style={{ flex: 1 }} />
+            <Button variant="secondary" loading={busy} disabled={!invite.trim()} onClick={doInvite}>＋ {t('cellar.invite')}</Button>
+          </div>
+          {members && (
+            <div style={{ display: 'grid', gap: 4 }}>
+              {members.map((m) => (
+                <div key={m.userId} className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 14 }}>{m.name} <Tag variant="outline">{t(`cellar.role_${m.role}`)}</Tag></span>
+                  {m.role !== 'owner' && (
+                    <Button variant="tertiary" loading={busy} onClick={() => doRemoveMember(m.userId)}>✕</Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

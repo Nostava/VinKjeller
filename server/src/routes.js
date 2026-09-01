@@ -1,6 +1,6 @@
 import { hashPassword, verifyPassword, newToken, uid } from './auth.js';
 import {
-  db, users, sessions, cellar, recipesDb, roundsDb, storesCache, gtinMap, productsCache, now, purgeVinmonopolData,
+  db, users, sessions, cellar, cellars, cellarMembers, recipesDb, roundsDb, storesCache, gtinMap, productsCache, now, purgeVinmonopolData,
 } from './db.js';
 import { searchProducts, getProduct, getPopular, byGtin, normalizeGtin, gtinCheckOk, stockAt, runDailyJob, imageSet } from './vinmonopol.js';
 import seedRecipesJson from '../../data/recipes.json' with { type: 'json' };
@@ -26,6 +26,36 @@ export function registerRoutes(app) {
     sessions.create.run(token, userId, new Date(Date.now() + SESSION_DAYS * 86400000).toISOString());
     reply.setCookie('vk_session', token, { path: '/', httpOnly: true, sameSite: 'lax', maxAge: SESSION_DAYS * 86400 });
   };
+  // Cellar membership: items belong to a cellar; a user may act on them only
+  // through a membership (owner or member) in that cellar.
+  const roleIn = (cellarId, userId) => (cellarId ? cellarMembers.role.get(String(cellarId), userId)?.role ?? null : null);
+  const homeCellarId = (u) => cellars.homeOf.get(u.id)?.id ?? null;
+  const resolveCellarId = (u, requested) => {
+    const r = String(requested ?? '');
+    if (r && roleIn(r, u.id)) return r;
+    return homeCellarId(u);
+  };
+  const requireOwner = (req, reply, cellarId) => {
+    const u = requireUser(req, reply); if (!u) return null;
+    const c = cellars.byId.get(String(cellarId));
+    if (!c || c.ownerUserId !== u.id) { reply.code(403).send({ error: 'not_owner' }); return null; }
+    return { u, c };
+  };
+  // The startup migration only sees users that existed then — new users get
+  // their home cellar here (and lazily when listing cellars).
+  const ensureHomeCellar = (u) => {
+    if (cellars.homeOf.get(u.id)) return;
+    const id = uid();
+    cellars.insert.run(id, 'Hjemmekjeller', u.id, now());
+    cellarMembers.insert.run(id, u.id, 'owner', now());
+  };
+  function brewJson(v) {
+    try {
+      const o = typeof v === 'string' ? JSON.parse(v) : v;
+      if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
+      return JSON.stringify(o).slice(0, 1000);
+    } catch { return null; }
+  }
 
   // ---------- meta / health ----------
   app.get('/api/health', async () => ({ ok: true, mode: app.cfg.productMode, time: now() }));
@@ -40,6 +70,7 @@ export function registerRoutes(app) {
     if (users.byEmail.get(em)) return reply.code(409).send({ error: 'email_taken' });
     const id = uid();
     users.create.run(id, em, hashPassword(password), String(name).slice(0, 80), 'nb');
+    ensureHomeCellar(users.byId.get(id));
     // seed recipes
     for (const r of seedRecipes) recipesDb.seedUpsert.run(r.id, r.nameKey, r.glass ?? null, r.image ?? null, JSON.stringify(r.ingredients));
     setSession(req, reply, id);
@@ -188,10 +219,70 @@ export function registerRoutes(app) {
     reply.send({ stores: rows });
   });
 
+  // ---------- cellars (shared shelves) ----------
+  app.get('/api/me/cellars', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    ensureHomeCellar(u);
+    reply.send({ items: cellars.forUser.all(u.id) });
+  });
+
+  app.post('/api/me/cellars', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    const name = String(req.body?.name ?? '').trim().slice(0, 60);
+    if (!name) return reply.code(400).send({ error: 'bad_request' });
+    const id = uid();
+    cellars.insert.run(id, name, u.id, now());
+    cellarMembers.insert.run(id, u.id, 'owner', now());
+    reply.code(201).send({ id, name });
+  });
+
+  app.patch('/api/cellars/:id', async (req, reply) => {
+    const o = requireOwner(req, reply, req.params.id); if (!o) return;
+    const name = String(req.body?.name ?? '').trim().slice(0, 60);
+    if (!name) return reply.code(400).send({ error: 'bad_request' });
+    cellars.rename.run(name, o.c.id, o.u.id);
+    reply.send({ ok: true });
+  });
+
+  app.delete('/api/cellars/:id', async (req, reply) => {
+    const o = requireOwner(req, reply, req.params.id); if (!o) return;
+    cellars.remove.run(o.c.id, o.u.id); // items cascade
+    reply.send({ ok: true });
+  });
+
+  app.get('/api/cellars/:id/members', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    if (!roleIn(req.params.id, u.id)) return reply.code(403).send({ error: 'not_a_member' });
+    reply.send({ items: cellarMembers.list.all(String(req.params.id)) });
+  });
+
+  app.post('/api/cellars/:id/members', async (req, reply) => {
+    const o = requireOwner(req, reply, req.params.id); if (!o) return;
+    const q = String(req.body?.username ?? '').trim().toLowerCase();
+    if (!q) return reply.code(400).send({ error: 'bad_request' });
+    const target = users.byEmail.get(q) ?? db.prepare(`SELECT * FROM users WHERE lower(name) = ?`).get(q);
+    if (!target) return reply.code(404).send({ error: 'no_such_user' });
+    if (target.id === o.u.id) return reply.code(400).send({ error: 'already_owner' });
+    if (roleIn(o.c.id, target.id)) return reply.send({ ok: true, name: target.name });
+    cellarMembers.insert.run(o.c.id, target.id, 'member', now());
+    reply.send({ ok: true, name: target.name });
+  });
+
+  app.delete('/api/cellars/:id/members/:userId', async (req, reply) => {
+    const o = requireOwner(req, reply, req.params.id); if (!o) return;
+    const m = roleIn(o.c.id, req.params.userId);
+    if (!m) return reply.code(404).send({ error: 'not_found' });
+    if (m === 'owner') return reply.code(400).send({ error: 'owner_cant_leave' });
+    cellarMembers.remove.run(o.c.id, String(req.params.userId));
+    reply.send({ ok: true });
+  });
+
   // ---------- cellar ----------
   app.get('/api/me/cellar', async (req, reply) => {
     const u = requireUser(req, reply); if (!u) return;
-    const items = cellar.list.all(u.id);
+    const cellarId = resolveCellarId(u, req.query.cellarId);
+    if (!cellarId) return reply.send({ items: [] });
+    const items = cellar.list.all(cellarId);
     const vmIds = [...new Set(items.filter((i) => i.source === 'vm').map((i) => i.vmProductId))];
     const pop = vmIds.length ? await getPopular(vmIds) : [];
     const popMap = new Map(pop.map((p) => [p.id, p]));
@@ -212,13 +303,16 @@ export function registerRoutes(app) {
     const source = b.source === 'custom' ? 'custom' : 'vm';
     if (source === 'vm' && !b.vmProductId) return reply.code(400).send({ error: 'bad_request' });
     if (source === 'custom' && !b.customName) return reply.code(400).send({ error: 'bad_request' });
+    const cellarId = resolveCellarId(u, b.cellarId);
+    if (!cellarId) return reply.code(400).send({ error: 'no_cellar' });
+    const brew = b.brewInfo !== undefined && b.brewInfo !== null ? brewJson(b.brewInfo) : null;
     // One add can cover several physical bottles (e.g. a 6-pack).
     const qty = Math.min(99, Math.max(1, Math.floor(Number(b.qty ?? 1)) || 1));
     const ids = [];
     for (let i = 0; i < qty; i++) {
       const id = uid();
       cellar.insert.run(
-        id, u.id, source,
+        id, u.id, cellarId, source,
         source === 'vm' ? String(b.vmProductId) : null,
         source === 'custom' ? String(b.customName).slice(0, 120) : null,
         b.customType ? String(b.customType).slice(0, 60) : null,
@@ -227,6 +321,7 @@ export function registerRoutes(app) {
         b.price !== undefined && b.price !== null ? Number(b.price) : null,
         b.photoUrl ? String(b.photoUrl).slice(0, 300) : null,
         b.note ? String(b.note).slice(0, 500) : null,
+        brew,
         now()
       );
       ids.push(id);
@@ -238,6 +333,8 @@ export function registerRoutes(app) {
 
   app.patch('/api/me/cellar/:id', async (req, reply) => {
     const u = requireUser(req, reply); if (!u) return;
+    const item = cellar.one.get(req.params.id);
+    if (!item || !roleIn(item.cellarId, u.id)) return reply.code(404).send({ error: 'not_found' });
     const b = req.body ?? {};
     cellar.update.run(
       b.customName !== undefined ? String(b.customName).slice(0, 120) : null,
@@ -247,15 +344,18 @@ export function registerRoutes(app) {
       b.price !== undefined && b.price !== null ? Number(b.price) : null,
       b.photoUrl !== undefined ? String(b.photoUrl).slice(0, 300) : null,
       b.note !== undefined ? String(b.note).slice(0, 500) : null,
-      req.params.id, u.id
+      b.brewInfo !== undefined && b.brewInfo !== null ? brewJson(b.brewInfo) : null,
+      req.params.id
     );
     reply.send({ ok: true });
   });
 
   app.delete('/api/me/cellar/:id', async (req, reply) => {
     const u = requireUser(req, reply); if (!u) return;
+    const item = cellar.one.get(req.params.id);
+    if (!item || !roleIn(item.cellarId, u.id)) return reply.code(404).send({ error: 'not_found' });
     const reason = String(req.body?.reason ?? req.query.reason ?? 'drank');
-    cellar.remove.run(now(), reason, req.params.id, u.id);
+    cellar.remove.run(now(), reason, req.params.id);
     reply.send({ ok: true });
   });
 

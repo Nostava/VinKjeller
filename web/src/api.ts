@@ -1,4 +1,4 @@
-import type { CellarItem, Product, Recipe, Round, User } from './types';
+import type { BrewInfo, Cellar, CellarItem, Product, Recipe, Round, User } from './types';
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -27,14 +27,38 @@ export const api = {
   updateMe: (patch: { name?: string; storeId?: string | null }) =>
     req<User>('/api/me', { method: 'PATCH', body: JSON.stringify(patch) }),
 
-  cellar: () => req<{ items: CellarItem[] }>('/api/me/cellar'),
+  // The active cellar (App.tsx keeps this in sync) — adds and list views
+  // target it without prop-drilling cellarId through every form.
+  cellar: (cellarId?: string | null) =>
+    req<{ items: CellarItem[] }>(
+      '/api/me/cellar' + (cellarId ? '?cellarId=' + encodeURIComponent(cellarId) : ''),
+    ),
   addBottle: (b: {
     source: 'vm' | 'custom'; vmProductId?: string | null; customName?: string | null; customType?: string | null;
     customAbv?: number | null; customVolumeCl?: number | null; price?: number | null;
     photoUrl?: string | null; note?: string | null; qty?: number;
+    cellarId?: string | null; brewInfo?: BrewInfo | null;
   }) => req<{ id: string; ids: string[] }>('/api/me/cellar', { method: 'POST', body: JSON.stringify(b) }),
+  updateBottle: (id: string, patch: {
+    customName?: string | null; customType?: string | null; customAbv?: number | null;
+    customVolumeCl?: number | null; price?: number | null; photoUrl?: string | null;
+    note?: string | null; brewInfo?: BrewInfo | null;
+  }) => req<{ ok: boolean }>(`/api/me/cellar/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   removeBottle: (id: string, reason: string) =>
     req<{ ok: boolean }>(`/api/me/cellar/${id}`, { method: 'DELETE', body: JSON.stringify({ reason }) }),
+
+  cellars: () => req<{ items: Cellar[] }>('/api/me/cellars'),
+  createCellar: (name: string) =>
+    req<{ id: string; name: string }>('/api/me/cellars', { method: 'POST', body: JSON.stringify({ name }) }),
+  renameCellar: (id: string, name: string) =>
+    req<{ ok: boolean }>(`/api/cellars/${id}`, { method: 'PATCH', body: JSON.stringify({ name }) }),
+  deleteCellar: (id: string) => req<{ ok: boolean }>(`/api/cellars/${id}`, { method: 'DELETE' }),
+  cellarMembers: (id: string) =>
+    req<{ items: { userId: string; name: string; role: 'owner' | 'member' }[] }>(`/api/cellars/${id}/members`),
+  inviteToCellar: (id: string, username: string) =>
+    req<{ ok: boolean; name?: string }>(`/api/cellars/${id}/members`, { method: 'POST', body: JSON.stringify({ username }) }),
+  removeFromCellar: (cellarId: string, userId: string) =>
+    req<{ ok: boolean }>(`/api/cellars/${cellarId}/members/${userId}`, { method: 'DELETE' }),
 
   product: (id: string) => req<{ product: Product | null; source: string }>('/api/products/' + id),
   byGtin: (gtin: string) =>
