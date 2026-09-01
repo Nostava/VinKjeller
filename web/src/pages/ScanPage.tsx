@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, Dialog, Heading, Input, Link, Spinner } from '@digdir/designsystemet-react';
+import { Alert, Button, Dialog, Heading, Input, Link, ListOrdered, ListItem, Paragraph, Spinner } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import { extractQueries, ocrImage, type OcrResult } from '../lib/ocr';
 import type { CellarItem, Product } from '../types';
@@ -34,6 +34,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
   const [takeOut, setTakeOut] = useState(false);
   const [label, setLabel] = useState<LabelState | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [remembering, setRemembering] = useState(false);
   const [qty, setQty] = useState(1);
   const lastScan = useRef(0);
@@ -255,8 +256,11 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
 
   return (
     <div>
-      <div className="row mb">
+      <div className="row mb" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Heading level={1} data-size="lg">{t('scan.title')}</Heading>
+        <Button variant="tertiary" onClick={() => setHelpOpen(true)} aria-label={t('scan.help')} style={{ fontWeight: 700 }}>
+          ?
+        </Button>
       </div>
 
       <video ref={videoRef} className="scan-video" playsInline muted />
@@ -435,6 +439,19 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
           />
         </Dialog>
       )}
+
+      <Dialog open={helpOpen} onClose={() => setHelpOpen(false)}>
+        <Heading level={2} data-size="lg">{t('scan.help_title')}</Heading>
+        <ListOrdered className="mt">
+          <ListItem>{t('scan.help_barcode')}</ListItem>
+          <ListItem>{t('scan.help_label')}</ListItem>
+          <ListItem>{t('scan.help_number')}</ListItem>
+          <ListItem>{t('scan.help_remember')}</ListItem>
+        </ListOrdered>
+        <Paragraph className="mt" data-size="sm" variant="long">
+          {t('scan.help_note')}
+        </Paragraph>
+      </Dialog>
 
       {takeOut && result?.product && (
         <TakeOutDialog
