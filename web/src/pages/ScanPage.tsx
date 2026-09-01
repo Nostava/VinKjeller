@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button, Dialog, Heading, Input, Link, ListOrdered, ListItem, Paragraph, Spinner } from '@digdir/designsystemet-react';
 import { api } from '../api';
-import { extractQueries, ocrImage, type OcrResult } from '../lib/ocr';
+import { extractQueries, ocrImage, type OcrEngine, type OcrResult } from '../lib/ocr';
 import type { CellarItem, Product } from '../types';
 import { BottleThumb, CustomItemForm, ProductFacts, StockLine } from '../components/ui';
 
@@ -13,9 +13,10 @@ type LabelState =
       img: string;
       text: string;
       query: string;
+      engine: 'troc' | 'tesseract';
       candidates: { vmProductId: string; name: string | null }[];
     }
-  | { phase: 'notfound'; img: string; text: string; queries: string[] };
+  | { phase: 'notfound'; img: string; text: string; queries: string[]; engine: 'troc' | 'tesseract' };
 
 export default function ScanPage({ items, storeId, onRefresh, showToast }: {
   items: CellarItem[];
@@ -42,6 +43,9 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
   // remember it for a product found by another means (name search in thin mode).
   const lastGtinCode = useRef<string | null>(null);
   const zxingControls = useRef<{ stop: () => void } | null>(null);
+  // Last captured label frame — kept so "retry with the other engine" can
+  // re-run OCR without reopening the camera.
+  const lastFrameRef = useRef<HTMLCanvasElement | null>(null);
 
   async function openCamera(mode: 'scan' | 'label') {
     setCameraErr(false);
@@ -164,7 +168,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
     return canvas;
   }
 
-  async function readLabel() {
+  function readLabel() {
     const canvas = captureFrame();
     if (!canvas) {
       showToast(t('common.error'));
@@ -172,20 +176,27 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
     }
     const img = canvas.toDataURL('image/jpeg', 0.9); // thumbnail for the result card
     closeCamera(); // free the camera while OCR runs
+    lastFrameRef.current = canvas;
+    const engine = (localStorage.getItem('vk_ocr_engine') as OcrEngine | null) ?? 'auto';
+    void runLabelOcr(canvas, img, engine);
+  }
+
+  async function runLabelOcr(canvas: HTMLCanvasElement, img: string, engine: OcrEngine) {
     setLabel({ phase: 'reading', img, progress: 0 });
     let ocr: OcrResult;
     try {
-      ocr = await ocrImage(canvas, (p) =>
-        setLabel((l) => (l && l.phase === 'reading' ? { ...l, progress: p } : l)),
-      );
+      ocr = await ocrImage(canvas, {
+        engine,
+        onProgress: (p) => setLabel((l) => (l && l.phase === 'reading' ? { ...l, progress: p } : l)),
+      });
     } catch {
-      setLabel({ phase: 'notfound', img, text: '', queries: [] });
+      setLabel({ phase: 'notfound', img, text: '', queries: [], engine: 'tesseract' });
       showToast(t('scan.label_err'));
       return;
     }
     const queries = extractQueries(ocr);
     if (!queries.length) {
-      setLabel({ phase: 'notfound', img, text: ocr.text.trim(), queries: [] });
+      setLabel({ phase: 'notfound', img, text: ocr.text.trim(), queries: [], engine: ocr.engine });
       return;
     }
     let hit: { query: string; candidates: { vmProductId: string; name: string | null }[] } | null = null;
@@ -200,8 +211,8 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
     }
     setLabel(
       hit
-        ? { phase: 'candidates', img, text: ocr.text.trim(), query: hit.query, candidates: hit.candidates }
-        : { phase: 'notfound', img, text: ocr.text.trim(), queries },
+        ? { phase: 'candidates', img, text: ocr.text.trim(), query: hit.query, engine: ocr.engine, candidates: hit.candidates }
+        : { phase: 'notfound', img, text: ocr.text.trim(), queries, engine: ocr.engine },
     );
   }
 
@@ -353,6 +364,17 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
                   ✏️ {t('scan.label_edit')}
                 </Button>
               )}
+              {lastFrameRef.current && (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    const other = label.engine === 'troc' ? 'tesseract' : 'troc';
+                    void runLabelOcr(lastFrameRef.current!, label.img, other);
+                  }}
+                >
+                  🔄 {t('scan.label_retry_other')}
+                </Button>
+              )}
               <Button variant="tertiary" onClick={() => setLabel(null)}>{t('common.cancel')}</Button>
             </div>
           )}
@@ -449,6 +471,9 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
           <ListItem>{t('scan.help_number')}</ListItem>
           <ListItem>{t('scan.help_remember')}</ListItem>
         </ListOrdered>
+        <Paragraph className="mt" data-size="sm" variant="long">
+          {t('scan.help_engines')}
+        </Paragraph>
         <Paragraph className="mt" data-size="sm" variant="long">
           {t('scan.help_note')}
         </Paragraph>

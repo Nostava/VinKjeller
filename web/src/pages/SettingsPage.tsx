@@ -15,6 +15,7 @@ export default function SettingsPage({ user, onLogout, showToast, onSaved }: {
   const [name, setName] = useState(user.name ?? '');
   const [lang, setLangState] = useState(i18n.language.slice(0, 2));
   const [theme, setThemeState] = useState(localStorage.getItem('vk_theme') ?? 'auto');
+  const [ocrEngine, setOcrEngine] = useState(localStorage.getItem('vk_ocr_engine') ?? 'auto');
   const [storeId, setStoreId] = useState(user.storeId ?? '');
   const [storeQ, setStoreQ] = useState('');
   const [stores, setStores] = useState<{ storeId: string; name: string; city: string }[]>([]);
@@ -103,6 +104,22 @@ export default function SettingsPage({ user, onLogout, showToast, onSaved }: {
           </div>
           <Button type="submit" variant="primary">{t('common.save')}</Button>
         </form>
+      </section>
+
+      <section className="mb">
+        <Heading level={2} data-size="md">{t('settings.ocr_title')}</Heading>
+        <p className="muted">{t('settings.ocr_note')}</p>
+        <Select
+          value={ocrEngine}
+          onChange={(e) => {
+            setOcrEngine(e.target.value);
+            localStorage.setItem('vk_ocr_engine', e.target.value);
+          }}
+        >
+          <option value="auto">{t('settings.ocr_auto')}</option>
+          <option value="troc">{t('settings.ocr_troc')}</option>
+          <option value="tesseract">{t('settings.ocr_tesseract')}</option>
+        </Select>
       </section>
 
       <section className="mb">
