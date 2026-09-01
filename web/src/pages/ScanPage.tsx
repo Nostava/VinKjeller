@@ -1,9 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, Dialog, Heading, Input } from '@digdir/designsystemet-react';
+import { Alert, Button, Dialog, Heading, Input, Link, Spinner } from '@digdir/designsystemet-react';
 import { api } from '../api';
+import { extractQueries, ocrImage, type OcrResult } from '../lib/ocr';
 import type { CellarItem, Product } from '../types';
 import { BottleThumb, CustomItemForm, ProductFacts, StockLine } from '../components/ui';
+
+type LabelState =
+  | { phase: 'reading'; img: string; progress: number }
+  | {
+      phase: 'candidates';
+      img: string;
+      text: string;
+      query: string;
+      candidates: { vmProductId: string; name: string | null }[];
+    }
+  | { phase: 'notfound'; img: string; text: string; queries: string[] };
 
 export default function ScanPage({ items, storeId, onRefresh, showToast }: {
   items: CellarItem[];
@@ -13,13 +25,15 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
 }) {
   const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [cameraOn, setCameraOn] = useState(false);
+  const [cameraMode, setCameraMode] = useState<'off' | 'scan' | 'label'>('off');
   const [cameraErr, setCameraErr] = useState(false);
   const [manual, setManual] = useState('');
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ product: Product | null; code: string; reason?: string } | null>(null);
   const [showCustom, setShowCustom] = useState(false);
-  const [takeOutCode, setTakeOutCode] = useState<string | null>(null);
+  const [takeOut, setTakeOut] = useState(false);
+  const [label, setLabel] = useState<LabelState | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [remembering, setRemembering] = useState(false);
   const [qty, setQty] = useState(1);
   const lastScan = useRef(0);
@@ -28,7 +42,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
   const lastGtinCode = useRef<string | null>(null);
   const zxingControls = useRef<{ stop: () => void } | null>(null);
 
-  async function startCamera() {
+  async function openCamera(mode: 'scan' | 'label') {
     setCameraErr(false);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -37,20 +51,20 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
       const video = videoRef.current!;
       video.srcObject = stream;
       await video.play();
-      setCameraOn(true);
-      scanLoop(stream);
+      setCameraMode(mode);
+      if (mode === 'scan') scanLoop(stream);
     } catch {
       setCameraErr(true);
     }
   }
 
-  function stopCamera() {
+  function closeCamera() {
     const video = videoRef.current;
     (video?.srcObject as MediaStream | null)?.getTracks().forEach((tr) => tr.stop());
     if (video) video.srcObject = null;
     try { zxingControls.current?.stop(); } catch { /* ignore */ }
     zxingControls.current = null;
-    setCameraOn(false);
+    setCameraMode('off');
   }
 
   async function scanLoop(stream: MediaStream) {
@@ -68,7 +82,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
             const now = Date.now();
             if (now - lastScan.current < 2500) return;
             lastScan.current = now;
-            stopCamera();
+            closeCamera();
             lookup(codes[0].rawValue);
           }
         } catch { /* keep scanning */ }
@@ -86,17 +100,17 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
           const now = Date.now();
           if (now - lastScan.current < 2500) return;
           lastScan.current = now;
-          stopCamera();
+          closeCamera();
           lookup(res.getText());
         }
       });
     } catch {
       setCameraErr(true);
-      setCameraOn(false);
+      setCameraMode('off');
     }
   }
 
-  useEffect(() => () => stopCamera(), []);
+  useEffect(() => () => closeCamera(), []);
 
   async function lookup(code: string) {
     const c = code.trim();
@@ -130,6 +144,76 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
       showToast(msg === 'q_too_short' ? t('scan.code_too_short') : msg);
     } finally {
       setBusy(false);
+    }
+  }
+
+  // ---------- label (OCR) flow — phase 1: identify, no saving yet ----------
+
+  function captureFrame(): string | null {
+    const video = videoRef.current;
+    if (!video || video.readyState < 2 || !video.videoWidth) return null;
+    // Downscale: label text is large, 1400px is plenty and OCR stays fast.
+    const scale = Math.min(1, 1400 / video.videoWidth);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.9);
+  }
+
+  async function readLabel() {
+    const img = captureFrame();
+    if (!img) {
+      showToast(t('common.error'));
+      return;
+    }
+    closeCamera(); // free the camera while OCR runs
+    setLabel({ phase: 'reading', img, progress: 0 });
+    let ocr: OcrResult;
+    try {
+      ocr = await ocrImage(img, (p) =>
+        setLabel((l) => (l && l.phase === 'reading' ? { ...l, progress: p } : l)),
+      );
+    } catch {
+      setLabel({ phase: 'notfound', img, text: '', queries: [] });
+      showToast(t('scan.label_err'));
+      return;
+    }
+    const queries = extractQueries(ocr);
+    if (!queries.length) {
+      setLabel({ phase: 'notfound', img, text: ocr.text.trim(), queries: [] });
+      return;
+    }
+    let hit: { query: string; candidates: { vmProductId: string; name: string | null }[] } | null = null;
+    for (const q of queries) {
+      try {
+        const res = await api.searchProducts(q);
+        if (res.items.length) {
+          hit = { query: q, candidates: res.items.slice(0, 8) };
+          break;
+        }
+      } catch { /* try the next query */ }
+    }
+    setLabel(
+      hit
+        ? { phase: 'candidates', img, text: ocr.text.trim(), query: hit.query, candidates: hit.candidates }
+        : { phase: 'notfound', img, text: ocr.text.trim(), queries },
+    );
+  }
+
+  async function openCandidate(c: { vmProductId: string; name: string | null }) {
+    setBusyId(c.vmProductId);
+    try {
+      const res = await api.product(c.vmProductId);
+      if (res.product) setResult({ product: res.product, code: '' });
+      else showToast(t('scan.not_found'));
+      setLabel(null);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : t('common.error'));
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -177,12 +261,21 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
 
       <video ref={videoRef} className="scan-video" playsInline muted />
       <div className="row mt">
-        {!cameraOn ? (
-          <Button variant="primary" onClick={startCamera}>📷 {t('scan.start')}</Button>
+        {cameraMode === 'off' ? (
+          <>
+            <Button variant="primary" onClick={() => openCamera('scan')}>📷 {t('scan.start')}</Button>
+            <Button variant="secondary" onClick={() => openCamera('label')}>🏷️ {t('scan.read_label')}</Button>
+          </>
         ) : (
-          <Button variant="secondary" onClick={stopCamera}>{t('scan.stop')}</Button>
+          <>
+            {cameraMode === 'label' && (
+              <Button variant="primary" onClick={readLabel}>📸 {t('scan.capture')}</Button>
+            )}
+            <Button variant="secondary" onClick={closeCamera}>{t('scan.stop')}</Button>
+          </>
         )}
-        {cameraOn && <span className="muted">{t('scan.hint')}</span>}
+        {cameraMode === 'scan' && <span className="muted">{t('scan.hint')}</span>}
+        {cameraMode === 'label' && <span className="muted">{t('scan.label_hint')}</span>}
       </div>
       {cameraErr && (
         <div className="mt">
@@ -204,6 +297,63 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
         </div>
       </div>
 
+      {label && (
+        <div className="mt result-card" style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16 }}>
+          <div className="row" style={{ gap: 12 }}>
+            <img src={label.img} alt="" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {label.phase === 'reading' && (
+                <>
+                  <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+                    <Spinner aria-label={t('scan.label_reading')} />
+                    <strong>{t('scan.label_reading')}</strong>
+                  </div>
+                  <span className="muted">{Math.round(label.progress * 100)}%</span>
+                </>
+              )}
+              {label.phase === 'candidates' && (
+                <Heading level={3} data-size="sm">{t('scan.label_matches', { n: label.candidates.length, q: label.query })}</Heading>
+              )}
+              {label.phase === 'notfound' && (
+                <>
+                  <Heading level={3} data-size="sm">{t('scan.label_notfound')}</Heading>
+                  {label.text && (
+                    <div className="muted" style={{ fontSize: 12, overflowWrap: 'anywhere' }}>{label.text.slice(0, 140)}</div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+          {label.phase === 'candidates' && (
+            <div className="mt" style={{ display: 'grid', gap: 4 }}>
+              {label.candidates.map((c) => (
+                <div key={c.vmProductId} className="row" style={{ justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
+                  <Button
+                    variant="tertiary"
+                    style={{ justifyContent: 'flex-start' }}
+                    loading={busyId === c.vmProductId}
+                    onClick={() => openCandidate(c)}
+                  >
+                    {c.name ?? c.vmProductId}
+                  </Button>
+                  <Link href={`https://www.vinmonopolet.no/p/${c.vmProductId}`} target="_blank" rel="noopener noreferrer">↗</Link>
+                </div>
+              ))}
+            </div>
+          )}
+          {label.phase === 'notfound' && (
+            <div className="mt row" style={{ flexWrap: 'wrap', gap: 8 }}>
+              {label.queries[0] && (
+                <Button variant="secondary" onClick={() => { setManual(label.queries[0]); setLabel(null); }}>
+                  ✏️ {t('scan.label_edit')}
+                </Button>
+              )}
+              <Button variant="tertiary" onClick={() => setLabel(null)}>{t('common.cancel')}</Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {result && (
         <div className="mt result-card" style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16 }}>
           {result.product ? (
@@ -213,6 +363,11 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
                 <div style={{ flex: 1 }}>
                   <Heading level={2} data-size="lg">{result.product.longName ?? result.product.name}</Heading>
                   <span className="muted">{result.product.subCategory ?? result.product.category}</span>
+                  <div>
+                    <Link href={`https://www.vinmonopolet.no/p/${result.product.vmProductId}`} target="_blank" rel="noopener noreferrer">
+                      {t('bottle.se_vm')} ↗
+                    </Link>
+                  </div>
                 </div>
               </div>
               <div className="mt">
@@ -223,7 +378,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
                 {qtyStepper}
                 <Button variant="primary" onClick={addProduct}>＋ {t('scan.add')}{qty > 1 ? ` ×${qty}` : ''}</Button>
                 {bottlesForResult.length > 0 && (
-                  <Button variant="secondary" onClick={() => setTakeOutCode(result.code)}>{t('scan.take_out')} ({bottlesForResult.length})</Button>
+                  <Button variant="secondary" onClick={() => setTakeOut(true)}>{t('scan.take_out')} ({bottlesForResult.length})</Button>
                 )}
                 {rememberBtn && (
                   <Button
@@ -281,13 +436,13 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
         </Dialog>
       )}
 
-      {takeOutCode && result?.product && (
+      {takeOut && result?.product && (
         <TakeOutDialog
           bottles={bottlesForResult}
-          onClose={() => setTakeOutCode(null)}
+          onClose={() => setTakeOut(false)}
           onDone={async (id) => {
             await api.removeBottle(id, 'drank');
-            setTakeOutCode(null);
+            setTakeOut(false);
             await onRefresh();
             showToast('✔');
           }}

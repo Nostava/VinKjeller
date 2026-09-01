@@ -8,6 +8,8 @@ dist/
 # «APIs or documentation that are not made generally available ... are confidential».
 # Holdes lokalt, IKKE i GitHub.
 *.yaml
+# Avtalens tekst — holdes lokalt for god skikk (kan endres uten varsel)
+docs/tos-*.txt
 
 # SQLite-database
 # (recipes.json er del av koden og skal IKKE ignoreres)
