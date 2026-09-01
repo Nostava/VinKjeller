@@ -324,7 +324,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
                     <Spinner aria-label={t('scan.label_reading')} />
                     <strong>{t('scan.label_reading')}</strong>
                   </div>
-                  <span className="muted">{Math.round(label.progress * 100)}%</span>
+                  <span className="muted">{Math.min(100, Math.max(0, Math.round(label.progress * 100)))}%</span>
                 </>
               )}
               {label.phase === 'candidates' && (

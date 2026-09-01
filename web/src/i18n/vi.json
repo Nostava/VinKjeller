@@ -64,7 +64,7 @@
     "label_hint": "Giữ camera song song với nhãn, ánh sáng đều — để tên sản phẩm chiếm phần lớn khung hình",
     "capture": "Chụp",
     "label_reading": "Đang đọc nhãn…",
-    "label_matches": "{n} kết quả cho “{q}”",
+    "label_matches": "{{n}} kết quả cho “{{q}}”",
     "label_notfound": "Không tìm thấy kết quả từ text trên nhãn",
     "label_edit": "Chỉnh sửa tìm kiếm",
     "label_retry_other": "Thử bộ đọc OCR kia",

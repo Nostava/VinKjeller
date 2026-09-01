@@ -65,7 +65,7 @@
     "label_hint": "Hold kameraet flatt mot etiketten med jevn lys — navnet bør fylle mest mulig av rammen",
     "capture": "Ta bilde",
     "label_reading": "Leser etikett…",
-    "label_matches": "Funnet {n} treff for «{q}»",
+    "label_matches": "Funnet {{n}} treff for «{{q}}»",
     "label_notfound": "Fant ingen treff på teksten fra etiketten",
     "label_edit": "Rediger søket",
     "label_retry_other": "Prøv med den andre OCR-motoren",

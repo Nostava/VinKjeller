@@ -57,7 +57,7 @@ function getWorker() {
   if (!workerPromise) {
     workerPromise = createWorker(LANGS, undefined, {
       logger: (m) => {
-        if (m.status === 'recognizing text') progressCb?.(m.progress);
+        if (m.status === 'recognizing text') progressCb?.(m.progress / 100); // tesseract reports 0–100
       },
     });
   }

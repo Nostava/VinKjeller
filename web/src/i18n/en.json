@@ -65,7 +65,7 @@
     "label_hint": "Hold the camera flat against the label, even light — let the name fill most of the frame",
     "capture": "Capture",
     "label_reading": "Reading label…",
-    "label_matches": "{n} match(es) for “{q}”",
+    "label_matches": "{{n}} match(es) for “{{q}}”",
     "label_notfound": "No matches from the label text",
     "label_edit": "Edit search",
     "label_retry_other": "Try the other OCR engine",
