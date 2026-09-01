@@ -157,6 +157,7 @@ function migrate() {
   const cols = new Set(db.prepare(`PRAGMA table_info(cellar_items)`).all().map((r) => r.name));
   if (!cols.has('cellarId')) db.exec(`ALTER TABLE cellar_items ADD COLUMN cellarId TEXT REFERENCES cellars(id) ON DELETE CASCADE`);
   if (!cols.has('brewInfo')) db.exec(`ALTER TABLE cellar_items ADD COLUMN brewInfo TEXT`);
+  if (!cols.has('boughtAt')) db.exec(`ALTER TABLE cellar_items ADD COLUMN boughtAt TEXT`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_cellar_items_cellar ON cellar_items(cellarId, removedAt)`);
   // every user gets a home cellar; their existing items move there
   const insC = db.prepare(`INSERT INTO cellars (id,name,ownerUserId,createdAt) VALUES (?,?,?,?)`);
@@ -196,10 +197,10 @@ export const sessions = {
 
 // ---------- cellar ----------
 export const cellar = {
-  insert: db.prepare(`INSERT INTO cellar_items (id,userId,cellarId,source,vmProductId,customName,customType,customAbv,customVolumeCl,price,photoUrl,note,brewInfo,addedAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`),
+  insert: db.prepare(`INSERT INTO cellar_items (id,userId,cellarId,source,vmProductId,customName,customType,customAbv,customVolumeCl,price,photoUrl,note,brewInfo,addedAt,boughtAt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`),
   list: db.prepare(`SELECT * FROM cellar_items WHERE cellarId = ? AND removedAt IS NULL ORDER BY addedAt DESC`),
   one: db.prepare(`SELECT * FROM cellar_items WHERE id = ?`),
-  update: db.prepare(`UPDATE cellar_items SET customName=COALESCE(?,customName), customType=COALESCE(?,customType), customAbv=COALESCE(?,customAbv), customVolumeCl=COALESCE(?,customVolumeCl), price=COALESCE(?,price), photoUrl=COALESCE(?,photoUrl), note=COALESCE(?,note), brewInfo=COALESCE(?,brewInfo) WHERE id=?`),
+  update: db.prepare(`UPDATE cellar_items SET customName=COALESCE(?,customName), customType=COALESCE(?,customType), customAbv=COALESCE(?,customAbv), customVolumeCl=COALESCE(?,customVolumeCl), price=COALESCE(?,price), photoUrl=COALESCE(?,photoUrl), note=COALESCE(?,note), brewInfo=COALESCE(?,brewInfo), boughtAt=COALESCE(?,boughtAt) WHERE id=?`),
   remove: db.prepare(`UPDATE cellar_items SET removedAt = ?, removedReason = ? WHERE id = ? AND removedAt IS NULL`),
   history: db.prepare(`SELECT * FROM cellar_items WHERE cellarId = ? ORDER BY addedAt DESC LIMIT 200`),
 };

@@ -18,6 +18,12 @@
   "cellar": {
     "title": "My cellar",
     "empty": "The cellar is empty. Scan a bottle to get started!",
+    "bought": "Bought",
+    "switch": "Switch",
+    "role_owner": "owner",
+    "role_member": "member",
+    "other_cellar_one": "«{{name}}» ({{role}}) has 1 bottle",
+    "other_cellar_other": "«{{name}}» ({{role}}) has {{count}} bottles",
     "add": "Add",
     "filter_ph": "Filter bottles…",
     "shelf": "On the shelf",

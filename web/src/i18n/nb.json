@@ -18,6 +18,12 @@
   "cellar": {
     "title": "Min vinkjeller",
     "empty": "Kjelleren er tom. Skann en flaske for å starte!",
+    "bought": "Kjøpt",
+    "switch": "Bytt",
+    "role_owner": "eier",
+    "role_member": "medlem",
+    "other_cellar_one": "«{{name}}» ({{role}}) har 1 flaske",
+    "other_cellar_other": "«{{name}}» ({{role}}) har {{count}} flasker",
     "add": "Legg til",
     "filter_ph": "Filtrér flasker…",
     "shelf": "På hyllen",

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Heading, Tag } from '@digdir/designsystemet-react';
+import { Alert, Dialog, Heading, Link, Tag } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import type { CellarItem } from '../types';
 import { parseBrewInfo } from '../types';
@@ -11,6 +11,7 @@ export default function SharePage({ token }: { token: string }) {
   const { t } = useTranslation();
   const [data, setData] = useState<{ cellarName: string | null; expiresAt: string | null; items: CellarItem[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sel, setSel] = useState<CellarItem | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -61,16 +62,22 @@ export default function SharePage({ token }: { token: string }) {
         ) : (
           <div className="bottle-grid">
             {data.items.map((it, idx) => (
-              <GuestCard key={it.id} item={it} index={idx} />
+              <GuestCard key={it.id} item={it} index={idx} onClick={() => setSel(it)} />
             ))}
           </div>
         )}
       </main>
+
+      {sel && (
+        <Dialog open onClose={() => setSel(null)}>
+          <GuestDetail item={data.items.find((i) => i.id === sel.id) ?? sel} />
+        </Dialog>
+      )}
     </div>
   );
 }
 
-function GuestCard({ item, index }: { item: CellarItem; index: number }) {
+function GuestCard({ item, index, onClick }: { item: CellarItem; index: number; onClick: () => void }) {
   const b = parseBrewInfo(item.brewInfo);
   const name = item.customName ?? item.product?.name ?? item.vmProductId ?? '';
   const sub = [
@@ -80,12 +87,13 @@ function GuestCard({ item, index }: { item: CellarItem; index: number }) {
   ].filter(Boolean).join(' · ');
 
   return (
-    <div
+    <button
+      onClick={onClick}
       style={{
         '--i': index,
-        display: 'flex', flexDirection: 'column', gap: 8,
+        display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left',
         border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12,
-        padding: 12, background: 'var(--ds-color-accent-background-default)',
+        padding: 12, background: 'var(--ds-color-accent-background-default)', cursor: 'pointer',
       } as React.CSSProperties}
     >
       <BottleThumb item={item} />
@@ -94,6 +102,62 @@ function GuestCard({ item, index }: { item: CellarItem; index: number }) {
       <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
         {item.product?.vintage && <Tag variant="outline">{item.product.vintage}</Tag>}
         {b?.brewDate && <Tag variant="outline">🍺 {b.brewDate}</Tag>}
+      </div>
+    </button>
+  );
+}
+
+/** Read-only detail for guests: the facts, no actions. */
+function GuestDetail({ item }: { item: CellarItem }) {
+  const { t } = useTranslation();
+  const b = parseBrewInfo(item.brewInfo);
+  const name = item.customName ?? item.product?.longName ?? item.product?.name ?? item.vmProductId ?? '';
+  const added = new Date(item.addedAt).toLocaleDateString('nb-NO');
+  const abv = item.customAbv ?? item.product?.abv;
+  const vol = item.customVolumeCl ?? item.product?.volumeCl;
+  const row = (label: string, value: string | number | null) =>
+    value === null || value === undefined || value === '' ? null : (
+      <div className="ing-row" key={label}>
+        <span className="muted">{label}</span>
+        <strong>{value}</strong>
+      </div>
+    );
+
+  return (
+    <div>
+      <div className="row">
+        <BottleThumb item={item} />
+        <div style={{ flex: 1 }}>
+          <Heading level={2} data-size="lg">{b ? '🍺 ' : ''}{name}</Heading>
+          <span className="muted">{item.customType ?? item.product?.subCategory ?? item.product?.category}</span>
+          <div className="mt">
+            {item.product && (
+              <Link href={`https://www.vinmonopolet.no/p/${item.product.vmProductId}`} target="_blank" rel="noopener noreferrer">
+                {t('bottle.se_vm')} ↗
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt">
+        {row(t('bottle.abv'), abv != null ? abv + ' %' : null)}
+        {row(t('bottle.volume'), vol != null ? vol + ' cl' : null)}
+        {row(t('bottle.category'), item.product?.subCategory ?? item.product?.category ?? null)}
+        {row(t('bottle.country'), [item.product?.country, item.product?.region, item.product?.subRegion].filter(Boolean).join(' / '))}
+        {row(t('bottle.vintage'), item.product?.vintage ?? null)}
+        {b && <>
+          {row(t('brew.style'), b.style ?? null)}
+          {row(t('brew.gravity'), [b.og != null ? 'OG ' + b.og : null, b.fg != null ? 'FG ' + b.fg : null].filter(Boolean).join(' · ') || null)}
+          {row(t('brew.ibu'), b.ibu ?? null)}
+          {row(t('brew.brewed'), b.brewDate ?? null)}
+          {row(t('brew.carbonation'), b.carbonation === 'light' ? t('brew.carb_light') : b.carbonation === 'full' ? t('brew.carb_full') : t('brew.carb_medium'))}
+          {row(t('brew.malt'), b.malt ?? null)}
+          {row(t('brew.hops'), b.hops ?? null)}
+          {row(t('brew.yeast'), b.yeast ?? null)}
+        </>}
+        {row(t('bottle.added'), added)}
+        {item.note && <div className="ing-row"><span className="muted">{t('bottle.note')}</span><span>{item.note}</span></div>}
       </div>
     </div>
   );

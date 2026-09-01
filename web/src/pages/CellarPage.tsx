@@ -131,12 +131,28 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
       )}
 
       {items.length === 0 ? (
-        <Alert data-color="info">
-          {t('cellar.empty')}
-          <div className="mt">
-            <Button variant="primary" onClick={goScan}>{t('nav.scan')}</Button>
-          </div>
-        </Alert>
+        <>
+          <Alert data-color="info">
+            {t('cellar.empty')}
+            <div className="mt">
+              <Button variant="primary" onClick={goScan}>{t('nav.scan')}</Button>
+            </div>
+          </Alert>
+          {/* you may be looking at the wrong cellar (e.g. your own empty home
+              cellar while you're a member of someone else's) */}
+          {cellars.filter((c) => c.id !== cellarId && c.itemCount > 0).map((c) => (
+            <div key={c.id} className="row mt" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 13, flex: 1, overflowWrap: 'anywhere' }}>
+                {t(`cellar.other_cellar_${c.itemCount === 1 ? 'one' : 'other'}`, {
+                  name: c.name,
+                  count: c.itemCount,
+                  role: c.role === 'member' ? t('cellar.role_member') : t('cellar.role_owner'),
+                })}
+              </span>
+              <Button variant="secondary" onClick={() => onSwitchCellar(c.id)}>{t('cellar.switch')}</Button>
+            </div>
+          ))}
+        </>
       ) : (
         <div className="bottle-grid">
           {filtered.map((it, idx) => (
@@ -178,9 +194,10 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
       {selected && (
         <Dialog open onClose={() => setSelected(null)}>
           <BottleDialog
-            item={selected}
+            item={items.find((i) => i.id === selected.id) ?? selected}
             storeId={storeId}
             onClose={() => setSelected(null)}
+            onChanged={onRefresh}
             onTakenOut={async (reason) => {
               await api.removeBottle(selected.id, reason);
               setSelected(null);
@@ -199,7 +216,7 @@ function pseudoItem(p: Product): CellarItem {
     source: 'vm',
     vmProductId: p.vmProductId,
     customName: null, customType: null, customAbv: null, customVolumeCl: null,
-    price: p.price, photoUrl: null, note: null, brewInfo: null,
+    price: p.price, photoUrl: null, note: null, brewInfo: null, boughtAt: null,
     addedAt: new Date().toISOString(), removedAt: null, removedReason: null,
     product: p,
   };
@@ -210,7 +227,8 @@ function BottleCard({ item, index, onClick }: { item: CellarItem; index: number;
   const name = item.customName ?? item.product?.name ?? t('bottle.no_data');
   const sub = item.customType ?? item.product?.subCategory ?? item.product?.category ?? '';
   const isBrew = !!item.brewInfo;
-  const months = Math.max(0, Math.floor((Date.now() - new Date(item.addedAt).getTime()) / (30.44 * 86400000)));
+  // shelf age counts from the (editable) buy date, falling back to addedAt
+  const months = Math.max(0, Math.floor((Date.now() - new Date(item.boughtAt ?? item.addedAt).getTime()) / (30.44 * 86400000)));
 
   return (
     <button
@@ -356,15 +374,18 @@ function AddDialog({ onClose, onDone, showToast }: { onClose: () => void; onDone
   );
 }
 
-function BottleDialog({ item, storeId, onClose, onTakenOut }: {
+function BottleDialog({ item, storeId, onClose, onChanged, onTakenOut }: {
   item: CellarItem;
   storeId: string | null;
   onClose: () => void;
+  onChanged: () => Promise<void>;
   onTakenOut: (reason: string) => void;
 }) {
   const { t } = useTranslation();
   const [removing, setRemoving] = useState(false);
   const [reason, setReason] = useState('drank');
+  const [bought, setBought] = useState((item.boughtAt ?? item.addedAt).slice(0, 10));
+  const [savingDate, setSavingDate] = useState(false);
   const name = item.customName ?? item.product?.longName ?? item.product?.name ?? item.vmProductId ?? '';
   const added = new Date(item.addedAt).toLocaleDateString('nb-NO');
 
@@ -398,6 +419,26 @@ function BottleDialog({ item, storeId, onClose, onTakenOut }: {
             <div className="ing-row"><span className="muted">{t('bottle.added')}</span><strong>{added}</strong></div>
           </>
         )}
+        <div className="ing-row" style={{ alignItems: 'flex-start' }}>
+          <span className="muted">{t('cellar.bought')}</span>
+          <span className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <Input type="date" value={bought} onChange={(e) => setBought(e.target.value)} aria-label={t('cellar.bought')} style={{ width: 'auto' }} />
+            <Button
+              variant="tertiary"
+              loading={savingDate}
+              onClick={async () => {
+                setSavingDate(true);
+                try {
+                  await api.updateBottle(item.id, { boughtAt: bought });
+                  await onChanged();
+                } catch { /* keep the dialog open on failure */ }
+                finally { setSavingDate(false); }
+              }}
+            >
+              {t('common.save')}
+            </Button>
+          </span>
+        </div>
         <div className="ing-row"><span className="muted">{t('bottle.added')}</span><strong>{added}</strong></div>
         {item.note && <div className="ing-row"><span className="muted">{t('bottle.note')}</span><span>{item.note}</span></div>}
       </div>

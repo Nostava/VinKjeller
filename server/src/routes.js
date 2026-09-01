@@ -58,6 +58,15 @@ export function registerRoutes(app) {
     } catch { return null; }
   }
 
+  // 'YYYY-MM-DD' (or a full ISO) if it parses, else null — the bought date
+  // the user enters is a plain date, keep it as typed.
+  function validDate(v) {
+    if (typeof v !== 'string') return null;
+    const s = v.trim();
+    if (!/^\d{4}-\d{2}-\d{2}/.test(s) || Number.isNaN(Date.parse(s))) return null;
+    return s;
+  }
+
   // ---------- meta / health ----------
   app.get('/api/health', async () => ({ ok: true, mode: app.cfg.productMode, time: now() }));
 
@@ -383,7 +392,8 @@ export function registerRoutes(app) {
         b.photoUrl ? String(b.photoUrl).slice(0, 300) : null,
         b.note ? String(b.note).slice(0, 500) : null,
         brew,
-        now()
+        now(),
+        validDate(b.boughtAt)
       );
       ids.push(id);
     }
@@ -406,6 +416,7 @@ export function registerRoutes(app) {
       b.photoUrl !== undefined ? String(b.photoUrl).slice(0, 300) : null,
       b.note !== undefined ? String(b.note).slice(0, 500) : null,
       b.brewInfo !== undefined && b.brewInfo !== null ? brewJson(b.brewInfo) : null,
+      b.boughtAt !== undefined ? validDate(b.boughtAt) : null,
       req.params.id
     );
     reply.send({ ok: true });

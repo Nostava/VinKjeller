@@ -31,6 +31,9 @@ export type CellarItem = {
   note: string | null;
   // JSON: homebrew batch details (style, og, fg, ibu, malt, hops, yeast, …)
   brewInfo: string | null;
+  // When the bottle was bought (user-editable, 'YYYY-MM-DD'). Falls back to
+  // addedAt for the shelf-age tag.
+  boughtAt: string | null;
   addedAt: string;
   removedAt: string | null;
   removedReason: string | null;

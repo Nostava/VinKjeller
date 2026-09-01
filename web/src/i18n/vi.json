@@ -18,6 +18,12 @@
   "cellar": {
     "title": "Hầm rượu của tôi",
     "empty": "Hầm rượu đang trống. Quét một chai để bắt đầu!",
+    "bought": "Đã mua",
+    "switch": "Chuyển",
+    "role_owner": "chủ",
+    "role_member": "thành viên",
+    "other_cellar_one": "«{{name}}» ({{role}}) có 1 chai",
+    "other_cellar_other": "«{{name}}» ({{role}}) có {{count}} chai",
     "add": "Thêm",
     "filter_ph": "Lọc chai…",
     "shelf": "Trên kệ",

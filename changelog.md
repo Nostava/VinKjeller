@@ -62,6 +62,13 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
 
 ## [Unreleased]
 ### Added
+- **Kjøpsdato kan redigeres** — i flaskevinduet er det nå et «Kjøpt»-felt med datovelger. «På hyllen X mnd» teller fra kjøpsdatoen (eller tilleggstidspunktet hvis du ikke har satt den). Nye brukere kan dermed registrere flasker de kjøpte for lenge siden.
+- **Gjester kan se på flaskene** — i gjest-visningen (delt lenke) kan man nå trykke på et kort og se alle detaljer (alkohol, volum, type, land, hjemmebrygg-infos, m.m.) — kun lesning.
+### Fixed
+- **Inviterte brukere fant ikke kjelleren** — nye brukere landet på sin egen tomme «Hjemmekjeller» i stedet for den delt kjelleren de var invitert til. Appen velger nå automatisk en kjeller med flasker hvis du ikke har valgt en, og en tom kjeller viser nå ««X» (medlem) har N flasker — Bytt» under tom-tipsen.
+- **Vodka-liknende flasker manglet i drink-menyen** — i tynn modus har ikke Vinmonopol-flasker volum, så ingredienster med mengde (f.eks. 5 cl vodka) aldri ble oppfylt. Nå teller en matchet flaske med ukjent volum som tilgjengelig (man kan ikke gjøre mengdematikk, så antall runder begrenses av antall flasker i stedet).
+- **App-tittelen er nå en knapp** som tar deg tilbake til kjellervisningen.
+### Added
 - **QR-kode for delt lenke** — i «Del»-dialogen vises QR-koden automatisk når lenken er generert (og 📷-knappen på hver aktiv lenke). Koden lages lokalt på telefonen (ingen API-kall) og peker rett på gjest-visningen — gjestene skanner med kameraet og får kjelleren rett opp, ingen installasjon.
 ### Removed
 - **Priser og salgstall bort** — «Verdi»-summator, prisfilter/sortering, prislinja i flaske- og produktvindu, «⭐ Populær»-merket og «Salg siste 12 mnd» er fjernet fra alt UI (og prisfeltet fra egen-vare-formularet). Dataene ligger fortsatt i databasen — bare skjult, så de kan komme tilbake uten at noe tapes.

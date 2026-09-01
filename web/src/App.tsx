@@ -31,11 +31,15 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
 
   // Loads cellars, keeps the active one valid, then loads its items.
-  // `cid` is the preferred cellar id (falls back to the first cellar).
+  // `cid` is the preferred cellar id. When none is (yet) chosen, prefer a
+  // cellar that actually has bottles — a freshly invited member otherwise
+  // lands on their own empty home cellar instead of the shared one.
   const refreshAll = useCallback(async (cid: string | null) => {
     const cs = await api.cellars();
     setCellars(cs.items);
-    const active = cs.items.some((c) => c.id === cid) ? cid : cs.items[0]?.id ?? null;
+    const active = cs.items.some((c) => c.id === cid)
+      ? cid
+      : (cs.items.find((c) => c.itemCount > 0) ?? cs.items[0])?.id ?? null;
     if (active !== cid) {
       setCellarId(active);
       if (active) localStorage.setItem(CELLAR_KEY, active);
@@ -103,7 +107,14 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>{t('app.name')}</h1>
+        <button
+          className="app-title"
+          onClick={() => setTab('cellar')}
+          aria-label={t('nav.cellar')}
+          title={t('nav.cellar')}
+        >
+          <h1>{t('app.name')}</h1>
+        </button>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
           <span className="muted">{user.name ?? user.email}</span>
           <button

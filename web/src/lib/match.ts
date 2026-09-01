@@ -47,6 +47,9 @@ export type IngStatus = {
   ing: Ingredient;
   matches: CellarItem[];
   availableCl: number;
+  // matched bottles whose volume we don't know (thin mode has no product
+  // volume) — they still count as available, just not measurable
+  unknownCount: number;
   ok: boolean;
 };
 
@@ -61,9 +64,13 @@ export type RecipeStatus = {
 export function recipeStatus(recipe: Recipe, items: CellarItem[]): RecipeStatus {
   const ings: IngStatus[] = recipe.ingredients.map((ing) => {
     const matches = matchBottles(ing, items);
-    const availableCl = matches.reduce((sum, m) => sum + (bottleVolumeCl(m) ?? 0), 0);
-    const ok = matches.length > 0 && (ing.cl <= 0 ? true : availableCl >= ing.cl);
-    return { ing, matches, availableCl, ok };
+    const known = matches.filter((m) => bottleVolumeCl(m) !== null);
+    const unknownCount = matches.length - known.length;
+    const availableCl = known.reduce((sum, m) => sum + (bottleVolumeCl(m) ?? 0), 0);
+    // A matched bottle with unknown volume still satisfies the ingredient —
+    // the bottle is in the cellar, we just can't measure it in cl.
+    const ok = matches.length > 0 && (ing.cl <= 0 ? true : unknownCount > 0 || availableCl >= ing.cl);
+    return { ing, matches, availableCl, unknownCount, ok };
   });
 
   const required = ings.filter((i) => !i.ing.optional);
@@ -71,7 +78,8 @@ export function recipeStatus(recipe: Recipe, items: CellarItem[]): RecipeStatus 
   for (const i of required) {
     if (!i.ok) continue;
     if (i.ing.cl > 0) {
-      maxRounds = Math.min(maxRounds, Math.floor(i.availableCl / i.ing.cl));
+      // unknown-volume bottles: we can't do cl-math, count bottles instead
+      maxRounds = Math.min(maxRounds, i.unknownCount > 0 ? i.matches.length : Math.floor(i.availableCl / i.ing.cl));
     } else {
       // zero-cl required (e.g. bitters drops): limited by number of bottles
       maxRounds = Math.min(maxRounds, i.matches.length);
