@@ -62,6 +62,8 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
 
 ## [Unreleased]
 ### Added
+- **«Legg til» flyter videre** — etter å ha lagt til en vinmonopol-flaske holder dialogen åpen og starter på nytt (søkefeltet er ryddet og ferdig til neste produkts søk) — så man kan legge til hele hyllen uten å lete etter knappen mellom hver flaske.
+- **Miniatyrer i «Legg til»-søket** — søkeresultatene viser nå produktbilde, så man kan skille mellom produkter med samme navn men ulik flaske.
 - **Kjøpsdato kan redigeres** — i flaskevinduet er det nå et «Kjøpt»-felt med datovelger. «På hyllen X mnd» teller fra kjøpsdatoen (eller tilleggstidspunktet hvis du ikke har satt den). Nye brukere kan dermed registrere flasker de kjøpte for lenge siden.
 - **Gjester kan se på flaskene** — i gjest-visningen (delt lenke) kan man nå trykke på et kort og se alle detaljer (alkohol, volum, type, land, hjemmebrygg-infos, m.m.) — kun lesning.
 ### Fixed

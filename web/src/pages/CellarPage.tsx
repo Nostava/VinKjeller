@@ -7,7 +7,7 @@ import {
 import { Input } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import type { Cellar, CellarItem, Product } from '../types';
-import { BottleThumb, CustomItemForm, ProductFacts, StockLine, useDebounce } from '../components/ui';
+import { BottleThumb, CustomItemForm, ProductFacts, StockLine, imageUrlFromSet, useDebounce } from '../components/ui';
 
 type SortKey = 'recent' | 'shelf' | 'name';
 
@@ -168,6 +168,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
       <Dialog open={showAdd} onClose={() => setShowAdd(false)}>
         <AddDialog
           onClose={() => setShowAdd(false)}
+          onRefresh={onRefresh}
           showToast={showToast}
           onDone={async () => { await onRefresh(); setShowAdd(false); showToast('✔'); }}
         />
@@ -250,12 +251,12 @@ function BottleCard({ item, index, onClick }: { item: CellarItem; index: number;
   );
 }
 
-function AddDialog({ onClose, onDone, showToast }: { onClose: () => void; onDone: () => void; showToast: (m: string) => void }) {
+function AddDialog({ onClose, onDone, onRefresh, showToast }: { onClose: () => void; onDone: () => void; onRefresh: () => Promise<void>; showToast: (m: string) => void }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<'vm' | 'custom'>('vm');
   const [q, setQ] = useState('');
   const dq = useDebounce(q);
-  const [results, setResults] = useState<{ vmProductId: string; name: string | null }[] | null>(null);
+  const [results, setResults] = useState<{ vmProductId: string; name: string | null; imageUrls: string | null }[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [chosen, setChosen] = useState<Product | null>(null);
   const [loadingProd, setLoadingProd] = useState(false);
@@ -275,7 +276,7 @@ function AddDialog({ onClose, onDone, showToast }: { onClose: () => void; onDone
     }
   }
 
-  async function pick(prod: { vmProductId: string; name: string | null }) {
+  async function pick(prod: { vmProductId: string; name: string | null; imageUrls: string | null }) {
     setLoadingProd(true);
     setMode('product');
     setQty(1);
@@ -293,7 +294,16 @@ function AddDialog({ onClose, onDone, showToast }: { onClose: () => void; onDone
     if (!chosen) return;
     try {
       await api.addBottle({ source: 'vm', vmProductId: chosen.vmProductId, price: chosen.price, qty });
-      onDone();
+      // stay open and reset for the next product — adding a full shelf
+      // should not mean hunting for the button 20 times
+      setQ('');
+      setLastQ('');
+      setResults(null);
+      setChosen(null);
+      setMode('search');
+      setQty(1);
+      await onRefresh();
+      showToast('✔');
     } catch (e) {
       showToast(e instanceof Error ? e.message : 'Feil');
     }
@@ -334,13 +344,24 @@ function AddDialog({ onClose, onDone, showToast }: { onClose: () => void; onDone
                 )}
                 {results && results.length > 0 && (
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 6 }}>
-                    {results.slice(0, 10).map((r) => (
-                      <li key={r.vmProductId}>
-                        <Button variant="secondary" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={() => pick(r)}>
-                          {r.name ?? r.vmProductId}
-                        </Button>
-                      </li>
-                    ))}
+                    {results.slice(0, 10).map((r) => {
+                      // thumbnails matter: same name, different bottle
+                      const img = imageUrlFromSet(r.imageUrls);
+                      return (
+                        <li key={r.vmProductId}>
+                          <Button variant="secondary" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 8 }} onClick={() => pick(r)}>
+                            {img && (
+                              <img
+                                src={img}
+                                alt=""
+                                style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 6, background: 'var(--ds-color-background-tinted)', flexShrink: 0 }}
+                              />
+                            )}
+                            <span style={{ textAlign: 'left' }}>{r.name ?? r.vmProductId}</span>
+                          </Button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
