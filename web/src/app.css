@@ -1,5 +1,13 @@
 /* VinKjeller layout (on top of Designsystemet) */
 
+/* Designsystemet has no global reset — without this, width:100% + padding
+   elements (e.g. .bottle-thumb) overflow their cards. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html,
 body,
 #root {

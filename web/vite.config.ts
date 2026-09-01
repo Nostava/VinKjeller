@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',
+      // auto-update: serve new bundles right away (prompt mode left users on
+      // stale cached JS after deploys — e.g. placeholder product images)
+      registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
         name: 'VinKjeller',

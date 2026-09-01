@@ -61,6 +61,10 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
   service worker og app-HTML på begge subdomainene.
 
 ## [Unreleased]
+### Fixed
+- **Overspill i vinkjeller-kort** — Designsystemet har ingen global `box-sizing`-reset, så `width:100% + padding`-elementer (bilde i kortet) ble 16 px bredere enn kortet, og hele kortet (bilde + «På hyllen …»-tag) stakk ut av rutenettet. Global `border-box`-reset lagt til.
+- **Gamle PWA-bundle etter deploy** — service worker brukte `prompt`-modus, så datamaskiner kunne ligge med gammel JS (f.eks. 🍾-bilde i stedet for ekte produktbilde). Byttet til `autoUpdate`: nye bundle aktiveres automatisk ved neste besøk.
+- **Feil «også offline»-tekst** — lagrede strekkoder slås opp i serverens DB (trenger altså server, men **ingen API-kall**). Teksten rettet i alle språk.
 ### Added
 - **Manuelt utvalg av område ved etikettlesing** — etter opptak ser du bildet og kan **tegne en boks** (dra med finger/mus) rundt teksten, og OCR kjører bare på det området («Les dette området»). Kan også «Les hele bildet» som før. Gikk det feil, er det «📏 Prøv med boks» i feil-menyen. Boksen er normalisert mot opptaksbilde, så den fungerer uavhengig av skjermstørrelse.
 - **Bilderkort for søketreff** — navnssøk (og etikettsøk) viser nå treffene som små kort med **bilde + navn** i stedet for kun tekstknapper. Skriver du inn et navn med flere treff (f.eks. «Angostura») får du velge mellom dem i stedet for at bare det første vises. Én treff åpnes fortsatt direkte. Bilde-URL-ene kommer med i søke-svaret (ingen ekstra API-kall).
