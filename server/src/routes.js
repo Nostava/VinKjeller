@@ -1,6 +1,7 @@
+import crypto from 'node:crypto';
 import { hashPassword, verifyPassword, newToken, uid } from './auth.js';
 import {
-  db, users, sessions, cellar, cellars, cellarMembers, recipesDb, roundsDb, storesCache, gtinMap, productsCache, now, purgeVinmonopolData,
+  db, users, sessions, cellar, cellars, cellarMembers, cellarShares, recipesDb, roundsDb, storesCache, gtinMap, productsCache, now, purgeVinmonopolData,
 } from './db.js';
 import { searchProducts, getProduct, getPopular, byGtin, normalizeGtin, gtinCheckOk, stockAt, runDailyJob, imageSet } from './vinmonopol.js';
 import seedRecipesJson from '../../data/recipes.json' with { type: 'json' };
@@ -275,6 +276,66 @@ export function registerRoutes(app) {
     if (m === 'owner') return reply.code(400).send({ error: 'owner_cant_leave' });
     cellarMembers.remove.run(o.c.id, String(req.params.userId));
     reply.send({ ok: true });
+  });
+
+  // ---------- sharing (party mode) ----------
+  // An unguessable token opens the cellar read-only without login.
+  // The token IS the credential; shares expire and/or get revoked.
+  app.post('/api/cellars/:id/shares', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    const cid = String(req.params.id);
+    if (!roleIn(cid, u.id)) return reply.code(403).send({ error: 'not_a_member' });
+    const b = req.body ?? {};
+    const label = b.label ? String(b.label).trim().slice(0, 60) : null;
+    let expiresAt = null;
+    if (b.expiresAt) {
+      const t = Date.parse(b.expiresAt);
+      if (Number.isNaN(t) || t <= Date.now()) return reply.code(400).send({ error: 'bad_request' });
+      expiresAt = new Date(t).toISOString();
+    }
+    const token = crypto.randomBytes(8).toString('hex');
+    cellarShares.insert.run(token, cid, label, expiresAt, now());
+    reply.code(201).send({ token, url: `/j/${token}`, expiresAt });
+  });
+
+  app.get('/api/cellars/:id/shares', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    const cid = String(req.params.id);
+    if (!roleIn(cid, u.id)) return reply.code(403).send({ error: 'not_a_member' });
+    reply.send({ items: cellarShares.activeForCellar.all(cid) });
+  });
+
+  app.delete('/api/cellars/:id/shares/:token', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    const cid = String(req.params.id);
+    if (!roleIn(cid, u.id)) return reply.code(403).send({ error: 'not_a_member' });
+    const n = cellarShares.revoke.run(now(), String(req.params.token), cid).changes;
+    if (!n) return reply.code(404).send({ error: 'not_found' });
+    reply.send({ ok: true });
+  });
+
+  // Public read-only view (no auth). Field list is explicit: no internal
+  // user ids, no drink log — guests see bottles only.
+  app.get('/api/share/:token', async (req, reply) => {
+    const s = cellarShares.byToken.get(String(req.params.token));
+    if (!s || s.revokedAt) return reply.code(404).send({ error: 'not_found' });
+    if (s.expiresAt && Date.parse(s.expiresAt) <= Date.now()) return reply.code(410).send({ error: 'expired' });
+    const items = cellar.list.all(s.cellarId);
+    const vmIds = [...new Set(items.filter((i) => i.source === 'vm').map((i) => i.vmProductId))];
+    const prodMap = new Map(vmIds.map((id) => [id, productsCache.get.get(id) ?? null]));
+    reply.send({
+      cellarName: cellars.byId.get(s.cellarId)?.name ?? null,
+      expiresAt: s.expiresAt,
+      items: items.map((i) => ({
+        id: i.id, source: i.source, vmProductId: i.vmProductId,
+        customName: i.customName, customType: i.customType,
+        customAbv: i.customAbv, customVolumeCl: i.customVolumeCl,
+        price: i.price, photoUrl: i.photoUrl, note: i.note, brewInfo: i.brewInfo,
+        addedAt: i.addedAt,
+        product: i.source === 'vm' ? prodMap.get(i.vmProductId) ?? null : null,
+        popularity: null,
+      })),
+    });
   });
 
   // ---------- cellar ----------

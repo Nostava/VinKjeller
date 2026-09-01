@@ -1,10 +1,14 @@
-import type { BrewInfo, Cellar, CellarItem, Product, Recipe, Round, User } from './types';
+import type { BrewInfo, Cellar, CellarItem, CellarShare, Product, Recipe, Round, User } from './types';
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
+  // Only send Content-Type with an actual body — fastify rejects an empty
+  // JSON body on e.g. DELETE ("Body cannot be empty").
+  const headers: Record<string, string> = { ...((init?.headers ?? {}) as Record<string, string>) };
+  if (init?.body !== undefined) headers['Content-Type'] = 'application/json';
   const res = await fetch(path, {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
     ...init,
+    headers,
   });
   if (!res.ok) {
     let msg = String(res.status);
@@ -59,6 +63,16 @@ export const api = {
     req<{ ok: boolean; name?: string }>(`/api/cellars/${id}/members`, { method: 'POST', body: JSON.stringify({ username }) }),
   removeFromCellar: (cellarId: string, userId: string) =>
     req<{ ok: boolean }>(`/api/cellars/${cellarId}/members/${userId}`, { method: 'DELETE' }),
+
+  // Party sharing: token links open the cellar read-only without login
+  createShare: (cellarId: string, body: { label?: string | null; expiresAt?: string | null }) =>
+    req<{ token: string; url: string; expiresAt: string | null }>(`/api/cellars/${cellarId}/shares`, { method: 'POST', body: JSON.stringify(body) }),
+  listShares: (cellarId: string) =>
+    req<{ items: CellarShare[] }>(`/api/cellars/${cellarId}/shares`),
+  revokeShare: (cellarId: string, token: string) =>
+    req<{ ok: boolean }>(`/api/cellars/${cellarId}/shares/${token}`, { method: 'DELETE' }),
+  shareView: (token: string) =>
+    req<{ cellarName: string | null; expiresAt: string | null; items: CellarItem[] }>(`/api/share/${token}`),
 
   product: (id: string) => req<{ product: Product | null; source: string }>('/api/products/' + id),
   byGtin: (gtin: string) =>

@@ -62,6 +62,8 @@ Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog
 
 ## [Unreleased]
 ### Added
+- **🎉 Partydeling** — «Del»-knappen i kjelleroversikten lager en gjest-lenke (f.eks. `v.harsku.no/j/abcd…`) som åpner kjelleren kun-lesende — gjestene trenger ikke konto. Velg navn (f.eks. «Fest lørdag»), utløper (2 timer / 1–3 dager / 1 uke / inntil revokert), kopier lenken, og revoker når som helst. Gjestene ser bare flaskene; ingen personlige data eller drikkelog forlater kjelleren.
+- **Innstillinger flyttet til toppen** — ⚙️-knappen står nå i toppbaren (navnet ditt ligger der), så buntnavet får pusterom igjen (4 faner).
 - **Delte kjellerer** — kjelleren er nå en egen ting som brukere kan være med i (eier/medlem). Velgeren «🍷 <kjeller> ▾» øverst i Kjeller-visningen bytter mellom kjellerene dine, lager nye, og (som eier) inviterer medlemmer med e-post/brukernavn, fjerner dem, endrer navn og sletter kjelleren. Eksisterende flasker flyttes automatisk til en ny «Hjemmekjeller» ved oppstart. Produktlag (produkter, lagrede strekkoder) er fortsatt universelt — det deles ikke, det er bare der for alle.
 - **🍺 Hjemmebryg** — ny fane for bryggsaker: navn, type, alkohol %, OG/FG, IBU, bryggedato (med «X dager siden»), flaskevolum, karbonering, malt, humle, gær og merknad. Vises som kort i Bryg-visningen (og i kjelleren med 🍺-merke). Redigeres ved å trykke på kortet.
 ### Fixed

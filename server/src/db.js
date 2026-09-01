@@ -62,6 +62,15 @@ CREATE TABLE IF NOT EXISTS cellar_members (
   joinedAt TEXT NOT NULL,
   PRIMARY KEY (cellarId, userId)
 );
+-- Party sharing: an unguessable token opens the cellar read-only, no login.
+CREATE TABLE IF NOT EXISTS cellar_shares (
+  token TEXT PRIMARY KEY,
+  cellarId TEXT NOT NULL REFERENCES cellars(id) ON DELETE CASCADE,
+  label TEXT,
+  expiresAt TEXT,
+  createdAt TEXT NOT NULL,
+  revokedAt TEXT
+);
 -- (index on cellar_items.cellarId is created in migrate(), after the column exists)
 
 -- Vinmonopol product cache (ToS: purge on demand)
@@ -205,6 +214,13 @@ export const cellars = {
     FROM cellars c JOIN cellar_members m ON m.cellarId = c.id WHERE m.userId = ? ORDER BY c.createdAt`),
   remove: db.prepare(`DELETE FROM cellars WHERE id = ? AND ownerUserId = ?`),
   rename: db.prepare(`UPDATE cellars SET name = ? WHERE id = ? AND ownerUserId = ?`),
+};
+
+export const cellarShares = {
+  insert: db.prepare(`INSERT INTO cellar_shares (token,cellarId,label,expiresAt,createdAt) VALUES (?,?,?,?,?)`),
+  activeForCellar: db.prepare(`SELECT * FROM cellar_shares WHERE cellarId = ? AND revokedAt IS NULL ORDER BY createdAt DESC`),
+  byToken: db.prepare(`SELECT * FROM cellar_shares WHERE token = ?`),
+  revoke: db.prepare(`UPDATE cellar_shares SET revokedAt = ? WHERE token = ? AND cellarId = ? AND revokedAt IS NULL`),
 };
 
 export const cellarMembers = {

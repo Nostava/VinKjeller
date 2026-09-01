@@ -47,6 +47,15 @@ export type Cellar = {
   itemCount: number;
 };
 
+export type CellarShare = {
+  token: string;
+  cellarId: string;
+  label: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+  revokedAt: string | null;
+};
+
 /** Homebrew batch details stored as JSON in CellarItem.brewInfo. */
 export type BrewInfo = {
   style?: string | null;

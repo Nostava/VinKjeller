@@ -38,6 +38,29 @@ body {
   border-bottom: 1px solid var(--ds-color-border-subtle);
 }
 
+/* round icon button in the app header (settings lives there, not in the nav) */
+.header-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--ds-color-border-subtle);
+  border-radius: 50%;
+  background: var(--ds-color-background-subtle);
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+.header-icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+.header-icon-btn[aria-pressed='true'],
+.header-icon-btn:active {
+  border-color: var(--ds-color-accent-base-default);
+}
+
 .app-header h1 {
   margin: 0;
   font-size: var(--ds-heading-md-font-size, 1.5rem);
@@ -95,11 +118,22 @@ body {
   font-weight: 600;
 }
 
-/* bottle grid */
+/* bottle grid — 165px minimum keeps 3 comfy columns on desktop (a
+   narrower column made the nowrap shelf tag overflow the card) */
 .bottle-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
   gap: var(--ds-size-4, 16px);
+}
+
+/* Designsystemet tags are width:max-content + flex-shrink:0 — in a tight
+   card, let them wrap instead of overflowing the card border. */
+.bottle-grid > * {
+  min-width: 0;
+}
+.bottle-grid .ds-tag {
+  width: auto;
+  max-width: 100%;
 }
 
 .bottle-thumb {

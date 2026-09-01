@@ -8,9 +8,13 @@ import DrinksPage from './pages/DrinksPage';
 import ScanPage from './pages/ScanPage';
 import BrewPage from './pages/BrewPage';
 import SettingsPage from './pages/SettingsPage';
+import SharePage from './pages/SharePage';
 import { IconBrew, IconCellar, IconDrinks, IconScan, IconSettings } from './components/icons';
 
 export type Tab = 'cellar' | 'drinks' | 'scan' | 'settings' | 'brew';
+
+// Party share links: /j/<token> is a public read-only cellar view (no login).
+const shareMatch = () => window.location.pathname.match(/^\/j\/([a-z0-9]{8,})$/i);
 
 const CELLAR_KEY = 'vk_cellar';
 
@@ -72,6 +76,11 @@ export default function App() {
     refreshAll(localStorage.getItem(CELLAR_KEY)).catch(() => {});
   }
 
+  const sh = shareMatch();
+  if (sh) {
+    return <SharePage token={sh[1]} />;
+  }
+
   if (loading) {
     return (
       <div className="app">
@@ -89,14 +98,23 @@ export default function App() {
     { id: 'brew', icon: IconBrew, label: t('nav.brew') },
     { id: 'drinks', icon: IconDrinks, label: t('nav.drinks') },
     { id: 'scan', icon: IconScan, label: t('nav.scan') },
-    { id: 'settings', icon: IconSettings, label: t('nav.settings') },
   ];
 
   return (
     <div className="app">
       <header className="app-header">
         <h1>{t('app.name')}</h1>
-        <span className="muted">{user.name ?? user.email}</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+          <span className="muted">{user.name ?? user.email}</span>
+          <button
+            onClick={() => setTab('settings')}
+            aria-label={t('nav.settings')}
+            title={t('nav.settings')}
+            className="header-icon-btn"
+          >
+            <IconSettings />
+          </button>
+        </span>
       </header>
       <main className="app-main">
         <div className="tab-page" key={tab}>

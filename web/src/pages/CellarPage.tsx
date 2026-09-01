@@ -31,6 +31,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
   const [selected, setSelected] = useState<CellarItem | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showPick, setShowPick] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const activeCellar = cellars.find((c) => c.id === cellarId) ?? null;
 
   // Filter options derived from what's actually in the cellar (they "light up"
@@ -95,6 +96,9 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
             🍷 {activeCellar.name}
             <span className="muted" aria-hidden>▾</span>
           </button>
+        )}
+        {activeCellar && (
+          <Button variant="tertiary" onClick={() => setShowShare(true)}>🎉 {t('share.short')}</Button>
         )}
         <span className="spacer" />
         <span className="muted">{t('cellar.value')}: <strong>{Math.round(totalValue)} kr</strong></span>
@@ -181,6 +185,12 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
             onChanged={onCellarsChanged}
             showToast={showToast}
           />
+        </Dialog>
+      )}
+
+      {activeCellar && (
+        <Dialog open={showShare} onClose={() => setShowShare(false)}>
+          <ShareDialog cellarId={activeCellar.id} cellarName={activeCellar.name} showToast={showToast} />
         </Dialog>
       )}
 
@@ -438,6 +448,117 @@ function BottleDialog({ item, storeId, onClose, onTakenOut }: {
           <Button variant="tertiary" onClick={onClose}>{t('common.close')}</Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Party mode: create/read-only share links (/j/<token>), list and revoke.
+ *  Guests need no account — the token is the credential. */
+function ShareDialog({ cellarId, cellarName, showToast }: {
+  cellarId: string;
+  cellarName: string;
+  showToast: (m: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [label, setLabel] = useState('');
+  const [exp, setExp] = useState('1d');
+  const [busy, setBusy] = useState(false);
+  const [fresh, setFresh] = useState<{ token: string; url: string; expiresAt: string | null } | null>(null);
+  const [shares, setShares] = useState<{ token: string; label: string | null; expiresAt: string | null; createdAt: string }[] | null>(null);
+
+  const load = () => api.listShares(cellarId).then((r) => setShares(r.items)).catch(() => {});
+  useEffect(() => { load(); }, [cellarId]);
+
+  function fullUrl(path: string) { return window.location.origin + path; }
+
+  async function copy(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(t('share.copied'));
+    } catch {
+      window.prompt(t('share.copy'), text);
+    }
+  }
+
+  async function create() {
+    setBusy(true);
+    try {
+      const ms = exp === 'never' ? null
+        : exp === '2h' ? 2 * 3600e3
+        : exp === '1w' ? 7 * 86400e3
+        : Number(exp.slice(0, -1)) * 86400e3;
+      const r = await api.createShare(cellarId, {
+        label: label.trim() || null,
+        expiresAt: ms ? new Date(Date.now() + ms).toISOString() : null,
+      });
+      setFresh(r);
+      setLabel('');
+      load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : t('common.error'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function revoke(token: string) {
+    setBusy(true);
+    try {
+      await api.revokeShare(cellarId, token);
+      load();
+      if (fresh?.token === token) setFresh(null);
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : t('common.error'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: 14 }}>
+      <Heading level={2} data-size="lg">🎉 {t('share.title')} — {cellarName}</Heading>
+      <p className="muted" style={{ fontSize: 13, margin: 0 }}>{t('share.host_note')}</p>
+
+      {fresh && (
+        <div style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 10, padding: 10, display: 'grid', gap: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 600 }}>{t('share.link')}</span>
+          <div className="row" style={{ gap: 8 }}>
+            <Input readOnly value={fullUrl(fresh.url)} aria-label={t('share.link')} style={{ flex: 1, fontSize: 13 }} />
+            <Button variant="secondary" onClick={() => copy(fullUrl(fresh.url))}>{t('share.copy_btn')}</Button>
+          </div>
+        </div>
+      )}
+
+      <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+        <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t('share.label_ph')} aria-label={t('share.label_ph')} style={{ flex: 1, minWidth: 140 }} />
+        <Select value={exp} onChange={(e) => setExp(e.target.value)} aria-label={t('share.expiry')} style={{ width: 'auto' }}>
+          <option value="2h">{t('share.exp_2h')}</option>
+          <option value="1d">{t('share.exp_1d')}</option>
+          <option value="3d">{t('share.exp_3d')}</option>
+          <option value="1w">{t('share.exp_1w')}</option>
+          <option value="never">{t('share.exp_never')}</option>
+        </Select>
+        <Button variant="primary" loading={busy} onClick={create}>{t('share.create')}</Button>
+      </div>
+
+      {shares && (
+        <div style={{ display: 'grid', gap: 6 }}>
+          <Heading level={3} data-size="sm">{t('share.active')}</Heading>
+          {shares.length === 0 && <span className="muted" style={{ fontSize: 13 }}>{t('share.none')}</span>}
+          {shares.map((s) => (
+            <div key={s.token} className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 13, flex: 1, overflowWrap: 'anywhere' }}>
+                <strong>{s.label ?? s.token.slice(0, 6) + '…'}</strong>{' '}
+                <span className="muted">
+                  {s.expiresAt ? t('share.until', { date: new Date(s.expiresAt).toLocaleString() }) : t('share.exp_never')}
+                </span>
+              </span>
+              <Button variant="tertiary" onClick={() => copy(fullUrl('/j/' + s.token))}>⧉</Button>
+              <Button variant="tertiary" loading={busy} onClick={() => revoke(s.token)}>✕</Button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
