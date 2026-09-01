@@ -2,7 +2,7 @@ import { hashPassword, verifyPassword, newToken, uid } from './auth.js';
 import {
   db, users, sessions, cellar, recipesDb, roundsDb, storesCache, gtinMap, productsCache, now, purgeVinmonopolData,
 } from './db.js';
-import { searchProducts, getProduct, getPopular, byGtin, normalizeGtin, gtinCheckOk, stockAt, runDailyJob } from './vinmonopol.js';
+import { searchProducts, getProduct, getPopular, byGtin, normalizeGtin, gtinCheckOk, stockAt, runDailyJob, imageSet } from './vinmonopol.js';
 import seedRecipesJson from '../../data/recipes.json' with { type: 'json' };
 const seedRecipes = seedRecipesJson;
 
@@ -104,7 +104,8 @@ export function registerRoutes(app) {
     try {
       const results = await searchProducts(q);
       reply.send({
-        items: results.map((r) => ({ vmProductId: r.vmProductId ?? r.id, name: r.name })),
+        // imageUrls let the client render name+image candidate cards without extra calls
+        items: results.map((r) => ({ vmProductId: r.vmProductId ?? r.id, name: r.name, imageUrls: imageSet(String(r.vmProductId ?? r.id)) })),
         mode: app.cfg.productMode,
       });
     } catch (e) {

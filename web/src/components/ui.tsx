@@ -13,15 +13,19 @@ export function useDebounce<T>(value: T, ms = 350): T {
   return v;
 }
 
-export function thumbUrl(product: Product | null | undefined): string | null {
-  if (!product?.imageUrls) return null;
+/** The server stores imageUrls as {thumbnail, product, zoom, superZoom} — prefer the 300px one. */
+export function imageUrlFromSet(imageUrls: string | null | undefined): string | null {
+  if (!imageUrls) return null;
   try {
-    // server stores {thumbnail, product, zoom, superZoom} — prefer the 300px one
-    const o = JSON.parse(product.imageUrls) as Record<string, string>;
+    const o = JSON.parse(imageUrls) as Record<string, string>;
     return o.product ?? o.thumbnail ?? null;
   } catch {
     return null;
   }
+}
+
+export function thumbUrl(product: Product | null | undefined): string | null {
+  return imageUrlFromSet(product?.imageUrls);
 }
 
 export function BottleThumb({ item, size = 'bottle-thumb' }: { item: CellarItem; size?: string }) {

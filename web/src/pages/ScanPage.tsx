@@ -4,9 +4,14 @@ import { Alert, Button, Dialog, Heading, Input, Link, ListOrdered, ListItem, Par
 import { api } from '../api';
 import { extractQueries, ocrImage, type OcrEngine, type OcrResult } from '../lib/ocr';
 import type { CellarItem, Product } from '../types';
-import { BottleThumb, CustomItemForm, ProductFacts, StockLine } from '../components/ui';
+import { BottleThumb, CustomItemForm, ProductFacts, StockLine, imageUrlFromSet } from '../components/ui';
+
+type SearchHit = { vmProductId: string; name: string | null; imageUrls: string | null };
+// normalized (0..1) region box, relative to the captured frame
+type Box = { x: number; y: number; w: number; h: number };
 
 type LabelState =
+  | { phase: 'review'; img: string }
   | { phase: 'reading'; img: string; progress: number }
   | {
       phase: 'candidates';
@@ -14,7 +19,7 @@ type LabelState =
       text: string;
       query: string;
       engine: 'troc' | 'tesseract';
-      candidates: { vmProductId: string; name: string | null }[];
+      candidates: SearchHit[];
     }
   | { phase: 'notfound'; img: string; text: string; queries: string[]; engine: 'troc' | 'tesseract' };
 
@@ -38,6 +43,9 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
   const [helpOpen, setHelpOpen] = useState(false);
   const [remembering, setRemembering] = useState(false);
   const [qty, setQty] = useState(1);
+  const [searchHits, setSearchHits] = useState<SearchHit[] | null>(null);
+  const [box, setBox] = useState<Box | null>(null);
+  const boxDraft = useRef<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
   const labelCardRef = useRef<HTMLDivElement>(null);
 
   // When the OCR result card appears (after capture), bring it into view —
@@ -145,25 +153,32 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
       return;
     }
     setBusy(true);
+    setSearchHits(null);
     try {
-      let product: Product | null = null;
-      let reason: string | undefined;
       if (/^\d{12,14}$/.test(c)) {
         lastGtinCode.current = c;
         const res = await api.byGtin(c);
-        product = res?.product ?? null;
-        reason = res?.reason;
-      } else if (/^\d{5,9}$/.test(c)) {
-        const res = await api.product(c);
-        product = res.product;
-      } else {
-        const res = await api.searchProducts(c);
-        if (res.items.length > 0) {
-          const r = await api.product(res.items[0].vmProductId);
-          product = r.product;
-        }
+        setResult({ product: res?.product ?? null, code: c, reason: res?.reason });
+        return;
       }
-      setResult({ product, code: c, reason });
+      if (/^\d{5,9}$/.test(c)) {
+        const res = await api.product(c);
+        setResult({ product: res.product, code: c, reason: res.product ? undefined : 'not_found' });
+        return;
+      }
+      // name search: one hit → straight to the product; several → pick from cards
+      const res = await api.searchProducts(c);
+      if (res.items.length === 1) {
+        const r = await api.product(res.items[0].vmProductId);
+        setResult({ product: r.product, code: c, reason: r.product ? undefined : 'not_found' });
+        return;
+      }
+      if (res.items.length > 1) {
+        setSearchHits(res.items.slice(0, 12));
+        setResult(null);
+        return;
+      }
+      setResult({ product: null, code: c, reason: 'not_found' });
     } catch (e) {
       const msg = e instanceof Error ? e.message : t('common.error');
       showToast(msg === 'q_too_short' ? t('scan.code_too_short') : msg);
@@ -197,8 +212,67 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
     const img = canvas.toDataURL('image/jpeg', 0.9); // thumbnail for the result card
     closeCamera(); // free the camera while OCR runs
     lastFrameRef.current = canvas;
+    setBox(null);
+    setLabel({ phase: 'review', img }); // user may crop a region before OCR
+  }
+
+  /** Crop a normalized region (with small padding) out of the captured frame. */
+  function cropRegion(frame: HTMLCanvasElement, b: Box): HTMLCanvasElement {
+    const fw = frame.width;
+    const fh = frame.height;
+    const pad = Math.max(8, Math.round(b.h * fh * 0.15));
+    const x0 = Math.max(0, Math.round(b.x * fw) - pad);
+    const y0 = Math.max(0, Math.round(b.y * fh) - pad);
+    const x1 = Math.min(fw, Math.round((b.x + b.w) * fw) + pad);
+    const y1 = Math.min(fh, Math.round((b.y + b.h) * fh) + pad);
+    const cv = document.createElement('canvas');
+    cv.width = Math.max(1, x1 - x0);
+    cv.height = Math.max(1, y1 - y0);
+    cv.getContext('2d')?.drawImage(frame, x0, y0, cv.width, cv.height, 0, 0, cv.width, cv.height);
+    return cv;
+  }
+
+  function startOcr(region: Box | null) {
+    const frame = lastFrameRef.current;
+    if (!frame || !label) return;
+    if (region && (Math.round(region.w * frame.width) < 48 || Math.round(region.h * frame.height) < 24)) {
+      showToast(t('scan.box_small'));
+      return;
+    }
     const engine = (localStorage.getItem('vk_ocr_engine') as OcrEngine | null) ?? 'auto';
-    void runLabelOcr(canvas, img, engine);
+    void runLabelOcr(region ? cropRegion(frame, region) : frame, label.img, engine);
+  }
+
+  // --- box drawing on the captured image (pointer events = mouse + touch) ---
+  function normPoint(e: React.PointerEvent<HTMLDivElement>) {
+    const r = e.currentTarget.getBoundingClientRect();
+    return {
+      x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)),
+      y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)),
+    };
+  }
+  function onBoxDown(e: React.PointerEvent<HTMLDivElement>) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const p = normPoint(e);
+    boxDraft.current = { x0: p.x, y0: p.y, x1: p.x, y1: p.y };
+    setBox(null);
+  }
+  function onBoxMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!boxDraft.current) return;
+    const p = normPoint(e);
+    const d = boxDraft.current;
+    d.x1 = p.x;
+    d.y1 = p.y;
+    setBox({
+      x: Math.min(d.x0, d.x1),
+      y: Math.min(d.y0, d.y1),
+      w: Math.abs(d.x1 - d.x0),
+      h: Math.abs(d.y1 - d.y0),
+    });
+  }
+  function onBoxUp() {
+    boxDraft.current = null;
+    setBox((b) => (b && (b.w < 0.03 || b.h < 0.03) ? null : b)); // ignore taps
   }
 
   async function runLabelOcr(canvas: HTMLCanvasElement, img: string, engine: OcrEngine) {
@@ -219,7 +293,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
       setLabel({ phase: 'notfound', img, text: ocr.text.trim(), queries: [], engine: ocr.engine });
       return;
     }
-    let hit: { query: string; candidates: { vmProductId: string; name: string | null }[] } | null = null;
+    let hit: { query: string; candidates: SearchHit[] } | null = null;
     for (const q of queries) {
       try {
         const res = await api.searchProducts(q);
@@ -236,18 +310,27 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
     );
   }
 
-  async function openCandidate(c: { vmProductId: string; name: string | null }) {
-    setBusyId(c.vmProductId);
+  async function openProduct(id: string) {
+    setBusyId(id);
     try {
-      const res = await api.product(c.vmProductId);
+      const res = await api.product(id);
       if (res.product) setResult({ product: res.product, code: '' });
       else showToast(t('scan.not_found'));
-      setLabel(null);
     } catch (e) {
       showToast(e instanceof Error ? e.message : t('common.error'));
     } finally {
       setBusyId(null);
     }
+  }
+
+  function openCandidate(c: SearchHit) {
+    setLabel(null);
+    void openProduct(c.vmProductId);
+  }
+
+  function openHit(h: SearchHit) {
+    setSearchHits(null);
+    void openProduct(h.vmProductId);
   }
 
   async function addProduct() {
@@ -334,7 +417,42 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
         </div>
       </div>
 
-      {label && (
+      {label?.phase === 'review' && (
+        <div ref={labelCardRef} className="mt result-card" style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16 }}>
+          <p className="muted" style={{ marginTop: 0, marginBottom: 12 }}>{t('scan.review_hint')}</p>
+          <div
+            style={{ position: 'relative', touchAction: 'none', userSelect: 'none', cursor: 'crosshair' }}
+            onPointerDown={onBoxDown}
+            onPointerMove={onBoxMove}
+            onPointerUp={onBoxUp}
+            onPointerCancel={onBoxUp}
+          >
+            <img src={label.img} alt="" style={{ width: '100%', display: 'block', borderRadius: 8 }} />
+            {box && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: `${box.x * 100}%`,
+                  top: `${box.y * 100}%`,
+                  width: `${box.w * 100}%`,
+                  height: `${box.h * 100}%`,
+                  border: '2px solid var(--ds-color-accent-base-default)',
+                  borderRadius: 4,
+                  background: 'rgba(128, 128, 128, 0.18)',
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+          </div>
+          <div className="mt row" style={{ flexWrap: 'wrap', gap: 8 }}>
+            {box && <Button variant="primary" onClick={() => startOcr(box)}>🔍 {t('scan.read_region')}</Button>}
+            <Button variant={box ? 'tertiary' : 'primary'} onClick={() => startOcr(null)}>▶️ {t('scan.read_full')}</Button>
+            {box && <Button variant="tertiary" onClick={() => setBox(null)}>{t('scan.box_remove')}</Button>}
+            <Button variant="tertiary" onClick={() => { setLabel(null); setBox(null); }}>{t('scan.review_cancel')}</Button>
+          </div>
+        </div>
+      )}
+      {label && label.phase !== 'review' && (
         <div ref={labelCardRef} className="mt result-card" style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16 }}>
           <div className="row" style={{ gap: 12 }}>
             <img src={label.img} alt="" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8 }} />
@@ -362,19 +480,9 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
             </div>
           </div>
           {label.phase === 'candidates' && (
-            <div className="mt" style={{ display: 'grid', gap: 4 }}>
+            <div className="mt" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 8 }}>
               {label.candidates.map((c) => (
-                <div key={c.vmProductId} className="row" style={{ justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
-                  <Button
-                    variant="tertiary"
-                    style={{ justifyContent: 'flex-start' }}
-                    loading={busyId === c.vmProductId}
-                    onClick={() => openCandidate(c)}
-                  >
-                    {c.name ?? c.vmProductId}
-                  </Button>
-                  <Link href={`https://www.vinmonopolet.no/p/${c.vmProductId}`} target="_blank" rel="noopener noreferrer">↗</Link>
-                </div>
+                <CandidateCard key={c.vmProductId} hit={c} busy={busyId === c.vmProductId} onClick={() => openCandidate(c)} />
               ))}
             </div>
           )}
@@ -383,6 +491,11 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
               {label.queries[0] && (
                 <Button variant="secondary" onClick={() => { setManual(label.queries[0]); setLabel(null); }}>
                   ✏️ {t('scan.label_edit')}
+                </Button>
+              )}
+              {lastFrameRef.current && (
+                <Button variant="secondary" onClick={() => { setBox(null); setLabel({ phase: 'review', img: label.img }); }}>
+                  📏 {t('scan.box_retry')}
                 </Button>
               )}
               {lastFrameRef.current && (
@@ -399,6 +512,17 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
               <Button variant="tertiary" onClick={() => setLabel(null)}>{t('common.cancel')}</Button>
             </div>
           )}
+        </div>
+      )}
+
+      {searchHits && (
+        <div className="mt result-card" style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16 }}>
+          <Heading level={3} data-size="sm">{t('scan.hits', { n: searchHits.length })}</Heading>
+          <div className="mt" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 8 }}>
+            {searchHits.map((h) => (
+              <CandidateCard key={h.vmProductId} hit={h} busy={busyId === h.vmProductId} onClick={() => openHit(h)} />
+            ))}
+          </div>
         </div>
       )}
 
@@ -515,6 +639,37 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
         />
       )}
     </div>
+  );
+}
+
+/** Small name+image card for search candidates (label OCR and name search). */
+function CandidateCard({ hit, busy, onClick }: { hit: SearchHit; busy: boolean; onClick: () => void }) {
+  const url = imageUrlFromSet(hit.imageUrls);
+  return (
+    <button
+      onClick={onClick}
+      disabled={busy}
+      style={{
+        display: 'flex',
+        gap: 10,
+        alignItems: 'center',
+        padding: '10px 12px',
+        border: '1px solid var(--ds-color-border-subtle)',
+        borderRadius: 10,
+        background: 'var(--ds-color-background-subtle)',
+        color: 'inherit',
+        cursor: busy ? 'progress' : 'pointer',
+        textAlign: 'left',
+        font: 'inherit',
+      }}
+    >
+      {url ? (
+        <img src={url} alt="" style={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0 }} />
+      ) : (
+        <span style={{ width: 44, height: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0 }} aria-hidden="true">🍾</span>
+      )}
+      <span style={{ fontSize: 13, fontWeight: 500, overflowWrap: 'anywhere', lineHeight: 1.25 }}>{hit.name ?? hit.vmProductId}</span>
+    </button>
   );
 }
 

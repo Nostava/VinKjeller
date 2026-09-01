@@ -42,7 +42,7 @@ export const api = {
   rememberGtin: (gtin: string, vmProductId: string) =>
     req<{ ok: boolean; gtin: string }>('/api/products/remember-gtin', { method: 'POST', body: JSON.stringify({ gtin, vmProductId }) }),
   searchProducts: (q: string) =>
-    req<{ items: { vmProductId: string; name: string | null }[]; mode: string }>('/api/products/search?q=' + encodeURIComponent(q)),
+    req<{ items: { vmProductId: string; name: string | null; imageUrls: string | null }[]; mode: string }>('/api/products/search?q=' + encodeURIComponent(q)),
 
   recipes: () => req<{ items: Recipe[] }>('/api/me/recipes'),
   addRecipe: (r: { nameKey: string; glass: string | null; image: string | null; ingredients: { nameKey: string; keywords: string[]; cl: number; optional?: boolean }[] }) =>

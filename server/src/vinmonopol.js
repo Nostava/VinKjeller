@@ -39,7 +39,7 @@ async function vmFetch(path, params = {}) {
 }
 
 const IMAGE_URL = (id, size) => `https://bilder.vinmonopolet.no/cache/${size}/${id}-1.jpg`;
-const imageSet = (id) => config.hotlinkImages
+export const imageSet = (id) => config.hotlinkImages
   ? JSON.stringify({ thumbnail: IMAGE_URL(id, '96x96-0'), product: IMAGE_URL(id, '300x300-0'), zoom: IMAGE_URL(id, '515x515-0'), superZoom: IMAGE_URL(id, '1200x1200-0') })
   : null;
 
