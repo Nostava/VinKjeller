@@ -16,9 +16,9 @@ export function useDebounce<T>(value: T, ms = 350): T {
 export function thumbUrl(product: Product | null | undefined): string | null {
   if (!product?.imageUrls) return null;
   try {
-    const arr = JSON.parse(product.imageUrls) as string[];
-    const t = arr.find((u) => u.includes('300x300')) ?? arr[0];
-    return t ?? null;
+    // server stores {thumbnail, product, zoom, superZoom} — prefer the 300px one
+    const o = JSON.parse(product.imageUrls) as Record<string, string>;
+    return o.product ?? o.thumbnail ?? null;
   } catch {
     return null;
   }

@@ -17,6 +17,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  height: 100dvh; /* mobile browser chrome shrinks/grows — dvh tracks it */
   max-width: 720px;
   margin: 0 auto;
 }
@@ -40,7 +41,9 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: var(--ds-size-5, 20px);
-  padding-bottom: calc(var(--ds-size-14, 56px) + env(safe-area-inset-bottom));
+  /* the fixed bottom nav is ~72px + safe-area; leave headroom so the last
+     element never hides behind it */
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
 /* bottom navigation */
