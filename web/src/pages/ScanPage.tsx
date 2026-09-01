@@ -38,16 +38,36 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
   const [helpOpen, setHelpOpen] = useState(false);
   const [remembering, setRemembering] = useState(false);
   const [qty, setQty] = useState(1);
+  const labelCardRef = useRef<HTMLDivElement>(null);
+
+  // When the OCR result card appears (after capture), bring it into view —
+  // the camera it replaced disappears, so the page shifts anyway.
+  useEffect(() => {
+    if (label) labelCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [label]);
+
+  // The camera opens wherever the user tapped (top button or the alert's
+  // "read label" button) — make sure it's actually visible.
+  useEffect(() => {
+    if (cameraMode !== 'off') videoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [cameraMode]);
   const lastScan = useRef(0);
   // Last code that looked like a barcode (12–14 digits), so the user can
   // remember it for a product found by another means (name search in thin mode).
   const lastGtinCode = useRef<string | null>(null);
+  const manualRef = useRef<HTMLInputElement>(null);
   const zxingControls = useRef<{ stop: () => void } | null>(null);
   // Last captured label frame — kept so "retry with the other engine" can
   // re-run OCR without reopening the camera.
   const lastFrameRef = useRef<HTMLCanvasElement | null>(null);
 
+  function focusManual() {
+    manualRef.current?.focus();
+    manualRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   async function openCamera(mode: 'scan' | 'label') {
+    closeCamera(); // stop any stream from a previous camera mode
     setCameraErr(false);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -275,7 +295,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
         </Button>
       </div>
 
-      <video ref={videoRef} className="scan-video" playsInline muted />
+      <video ref={videoRef} className="scan-video" playsInline muted style={{ display: cameraMode === 'off' ? 'none' : undefined }} />
       <div className="row mt">
         {cameraMode === 'off' ? (
           <>
@@ -302,6 +322,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
       <div className="mt">
         <div className="row">
           <Input
+            ref={manualRef}
             value={manual}
             onChange={(e) => setManual(e.target.value)}
             placeholder={t('scan.manual_ph')}
@@ -314,7 +335,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
       </div>
 
       {label && (
-        <div className="mt result-card" style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16 }}>
+        <div ref={labelCardRef} className="mt result-card" style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16 }}>
           <div className="row" style={{ gap: 12 }}>
             <img src={label.img} alt="" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -445,8 +466,10 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
                   </>
                 )}
               </Alert>
-              <div className="mt">
-                <Button variant="secondary" onClick={() => setShowCustom(true)}>＋ {t('scan.add_custom')}</Button>
+              <div className="mt row" style={{ flexWrap: 'wrap' }}>
+                <Button variant="secondary" onClick={() => openCamera('label')}>🏷️ {t('scan.read_label')}</Button>
+                <Button variant="secondary" onClick={focusManual}>🔎 {t('scan.search_name')}</Button>
+                <Button variant="tertiary" onClick={() => setShowCustom(true)}>＋ {t('scan.add_custom')}</Button>
               </div>
             </>
           )}
