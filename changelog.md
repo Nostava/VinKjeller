@@ -2,6 +2,21 @@
 
 Alle verdt-å-vite endringer i VinKjeller. Format inspirert av [Keep a Changelog](https://keepachangelog.com/), versjoner følger semver når appen er ute.
 
+## [Unreleased]
+
+### Added
+- **Tilbakemelding** (som i DnD-Schedulers Feedback-fane): ny `feedback`-tabell
+  (global — alle brukere ser alle rader) + API
+  (`GET/POST /api/feedback`, `PATCH/PUT/DELETE /api/feedback/:id`). Brukere kan
+  sende inn feil/forbedringer/ideer, se alle tilbakemeldinger, redigere/slette
+  sine egne mens de er `PENDING`, og endre status på sine egne rader. Statuser:
+  `PENDING → REPLYING → CLOSED`; `adminNote` vises som «Merknad fra eier»
+  (feedback-boten på eierens PC leser `PENDING`-radene og setter
+  status/adminNote direkte i DB-en).
+- **💬-flate i wafler-menyen** åpner siden; faner **Send inn / Alle (n) / Mine
+  (n)**, type-badges (Feil/Forbedring/Funksjon/Annet), statusbadge, uthevbar
+  melding, inline-redigering. I18n: nb, nn, en, vi.
+
 ## [0.1.0] — 2026-08-27
 
 ### Added

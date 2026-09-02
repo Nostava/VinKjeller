@@ -1,4 +1,4 @@
-import type { BrewInfo, Cellar, CellarItem, CellarShare, Product, Recipe, Round, User } from './types';
+import type { BrewInfo, Cellar, CellarItem, CellarShare, Feedback, Product, Recipe, Round, User } from './types';
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   // Only send Content-Type with an actual body — fastify rejects an empty
@@ -106,4 +106,14 @@ export const api = {
 
   stores: () => req<{ stores: { storeId: string; name: string; city: string }[] }>('/api/stores'),
   purge: () => req<{ ok: boolean; deleted: Record<string, number> }>('/api/purge-vinmonopol', { method: 'POST' }),
+
+  // Feedback about the app (global — all users see all rows)
+  feedback: () => req<{ items: Feedback[] }>('/api/feedback'),
+  addFeedback: (b: { type: Feedback['type']; title: string; message?: string | null }) =>
+    req<{ id: string }>('/api/feedback', { method: 'POST', body: JSON.stringify(b) }),
+  updateFeedback: (id: string, patch: { title?: string; message?: string | null }) =>
+    req<{ ok: boolean }>(`/api/feedback/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+  setFeedbackStatus: (id: string, status: Feedback['status']) =>
+    req<{ ok: boolean }>(`/api/feedback/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  removeFeedback: (id: string) => req<{ ok: boolean }>(`/api/feedback/${id}`, { method: 'DELETE' }),
 };

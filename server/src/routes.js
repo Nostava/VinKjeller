@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { hashPassword, verifyPassword, newToken, uid } from './auth.js';
 import {
-  db, users, sessions, cellar, cellars, cellarMembers, cellarShares, recipesDb, roundsDb, storesCache, gtinMap, productsCache, now, purgeVinmonopolData,
+  db, users, sessions, cellar, cellars, cellarMembers, cellarShares, recipesDb, roundsDb, feedbackDb, storesCache, gtinMap, productsCache, now, purgeVinmonopolData,
 } from './db.js';
 import { searchProducts, getProduct, getPopular, byGtin, normalizeGtin, gtinCheckOk, stockAt, runDailyJob, imageSet } from './vinmonopol.js';
 import seedRecipesJson from '../../data/recipes.json' with { type: 'json' };
@@ -487,6 +487,66 @@ export function registerRoutes(app) {
     const id = uid();
     roundsDb.insert.run(id, u.id, String(b.recipeId), now(), JSON.stringify(b.consumed));
     reply.code(201).send({ id });
+  });
+
+  // ---------- feedback ----------
+  // Global (not per-cellar): every user can add and see all feedback about
+  // the app. Owners may edit/delete their own rows while PENDING and change
+  // the status of their own row; the feedback bot (owner's PC) updates
+  // status/adminNote directly in the DB, not through these routes.
+  const FB_TYPES = ['bug', 'improvement', 'feature', 'other'];
+  const FB_STATUS = ['PENDING', 'REPLYING', 'CLOSED'];
+
+  app.get('/api/feedback', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    reply.send({ items: feedbackDb.list.all() });
+  });
+
+  app.post('/api/feedback', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    const b = req.body ?? {};
+    const type = FB_TYPES.includes(b.type) ? b.type : 'other';
+    const title = String(b.title ?? '').trim().slice(0, 120);
+    if (!title) return reply.code(400).send({ error: 'bad_request' });
+    const message = b.message ? String(b.message).trim().slice(0, 2000) : null;
+    const id = uid();
+    feedbackDb.insert.run(id, u.id, type, title, message, now(), now());
+    reply.code(201).send({ id });
+  });
+
+  app.patch('/api/feedback/:id', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    const f = feedbackDb.one.get(req.params.id);
+    if (!f) return reply.code(404).send({ error: 'not_found' });
+    if (f.userId !== u.id) return reply.code(403).send({ error: 'not_yours' });
+    if (f.status !== 'PENDING') return reply.code(409).send({ error: 'not_pending' });
+    const b = req.body ?? {};
+    const title = b.title !== undefined ? String(b.title).trim().slice(0, 120) : f.title;
+    if (!title) return reply.code(400).send({ error: 'bad_request' });
+    const message = b.message !== undefined ? (b.message ? String(b.message).trim().slice(0, 2000) : null) : f.message;
+    feedbackDb.update.run(title, message, now(), req.params.id);
+    reply.send({ ok: true });
+  });
+
+  app.put('/api/feedback/:id', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    const f = feedbackDb.one.get(req.params.id);
+    if (!f) return reply.code(404).send({ error: 'not_found' });
+    if (f.userId !== u.id) return reply.code(403).send({ error: 'not_yours' });
+    const status = String(req.body?.status ?? '');
+    if (!FB_STATUS.includes(status)) return reply.code(400).send({ error: 'bad_request' });
+    feedbackDb.setStatus.run(status, now(), req.params.id);
+    reply.send({ ok: true });
+  });
+
+  app.delete('/api/feedback/:id', async (req, reply) => {
+    const u = requireUser(req, reply); if (!u) return;
+    const f = feedbackDb.one.get(req.params.id);
+    if (!f) return reply.code(404).send({ error: 'not_found' });
+    if (f.userId !== u.id) return reply.code(403).send({ error: 'not_yours' });
+    if (f.status !== 'PENDING') return reply.code(409).send({ error: 'not_pending' });
+    feedbackDb.remove.run(req.params.id);
+    reply.send({ ok: true });
   });
 }
 

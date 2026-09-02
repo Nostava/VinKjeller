@@ -146,6 +146,22 @@ CREATE TABLE IF NOT EXISTS gtin_map (
   vmProductId TEXT NOT NULL,
   learnedAt TEXT NOT NULL
 );
+
+-- User feedback about the app (global, all users see all rows — like the
+-- DnD-Scheduler Feedback tab). The feedback bot (owner's PC) reads PENDING
+-- rows and sets status/adminNote directly in this table.
+CREATE TABLE IF NOT EXISTS feedback (
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL DEFAULT 'other' CHECK (type IN ('bug','improvement','feature','other')),
+  title TEXT NOT NULL,
+  message TEXT,
+  status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','REPLYING','CLOSED')),
+  adminNote TEXT,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(createdAt DESC);
 `);
 
 const now = () => new Date().toISOString();
@@ -294,6 +310,16 @@ export const recipesDb = {
   create: db.prepare(`INSERT INTO recipes (id,userId,nameKey,glass,image,ingredients,favorite) VALUES (?,?,?,?,?,?,0)`),
   update: db.prepare(`UPDATE recipes SET favorite = COALESCE(?,favorite), glass = COALESCE(?,glass) WHERE id = ? AND userId = ?`),
   remove: db.prepare(`DELETE FROM recipes WHERE id = ? AND userId = ?`),
+};
+
+// ---------- feedback ----------
+export const feedbackDb = {
+  insert: db.prepare(`INSERT INTO feedback (id,userId,type,title,message,status,createdAt,updatedAt) VALUES (?,?,?,?,?,'PENDING',?,?)`),
+  list: db.prepare(`SELECT f.*, u.name AS userName FROM feedback f LEFT JOIN users u ON u.id = f.userId ORDER BY f.createdAt DESC LIMIT 200`),
+  one: db.prepare(`SELECT * FROM feedback WHERE id = ?`),
+  update: db.prepare(`UPDATE feedback SET title = ?, message = ?, updatedAt = ? WHERE id = ?`),
+  setStatus: db.prepare(`UPDATE feedback SET status = ?, updatedAt = ? WHERE id = ?`),
+  remove: db.prepare(`DELETE FROM feedback WHERE id = ?`),
 };
 
 export const roundsDb = {

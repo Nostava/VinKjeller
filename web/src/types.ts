@@ -117,4 +117,20 @@ export type Round = {
 
 export type User = { id: string; email: string; name: string | null; storeId: string | null };
 
+export type FeedbackType = 'bug' | 'improvement' | 'feature' | 'other';
+export type FeedbackStatus = 'PENDING' | 'REPLYING' | 'CLOSED';
+
+export type Feedback = {
+  id: string;
+  userId: string | null;
+  userName: string | null;
+  type: FeedbackType;
+  title: string;
+  message: string | null;
+  status: FeedbackStatus;
+  adminNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Store = { storeId: string; name: string; city: string; address: string | null; gpsCoord: string | null };

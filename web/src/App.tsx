@@ -10,10 +10,11 @@ import BrewPage from './pages/BrewPage';
 import SettingsPage from './pages/SettingsPage';
 import SharePage from './pages/SharePage';
 import FridgePage from './pages/FridgePage';
+import FeedbackPage from './pages/FeedbackPage';
 import { IconBrew, IconCellar, IconDrinks, IconScan, IconWaffle } from './components/icons';
 import { Dialog, Heading } from '@digdir/designsystemet-react';
 
-export type Tab = 'cellar' | 'drinks' | 'scan' | 'settings' | 'brew' | 'fridge';
+export type Tab = 'cellar' | 'drinks' | 'scan' | 'settings' | 'brew' | 'fridge' | 'feedback';
 
 // Party share links: /j/<token> is a public read-only cellar view (no login).
 const shareMatch = () => window.location.pathname.match(/^\/j\/([a-z0-9]{8,})$/i);
@@ -131,23 +132,30 @@ export default function App() {
         </span>
       </header>
 
-      {/* waffle menu: settings + fridge (kept out of the bottom nav on purpose) */}
+      {/* waffle menu: fridge + settings + feedback (kept out of the bottom nav on purpose) */}
       <Dialog open={menuOpen} onClose={() => setMenuOpen(false)}>
         <Heading level={2} data-size="lg">{t('menu.title')}</Heading>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }} className="mt">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }} className="mt">
           <button
             onClick={() => { setMenuOpen(false); setTab('fridge'); }}
-            style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16, background: 'var(--ds-color-background-subtle)', cursor: 'pointer', font: 'inherit', textAlign: 'center' }}
+            style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 12, background: 'var(--ds-color-background-subtle)', cursor: 'pointer', font: 'inherit', textAlign: 'center' }}
           >
-            <div style={{ fontSize: 28 }} aria-hidden>🧊</div>
-            <div style={{ fontWeight: 600, marginTop: 6 }}>{t('menu.fridge')}</div>
+            <div style={{ fontSize: 26 }} aria-hidden>🧊</div>
+            <div style={{ fontWeight: 600, marginTop: 6, fontSize: 14 }}>{t('menu.fridge')}</div>
           </button>
           <button
             onClick={() => { setMenuOpen(false); setTab('settings'); }}
-            style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 16, background: 'var(--ds-color-background-subtle)', cursor: 'pointer', font: 'inherit', textAlign: 'center' }}
+            style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 12, background: 'var(--ds-color-background-subtle)', cursor: 'pointer', font: 'inherit', textAlign: 'center' }}
           >
-            <div style={{ fontSize: 28 }} aria-hidden>⚙️</div>
-            <div style={{ fontWeight: 600, marginTop: 6 }}>{t('menu.settings')}</div>
+            <div style={{ fontSize: 26 }} aria-hidden>⚙️</div>
+            <div style={{ fontWeight: 600, marginTop: 6, fontSize: 14 }}>{t('menu.settings')}</div>
+          </button>
+          <button
+            onClick={() => { setMenuOpen(false); setTab('feedback'); }}
+            style={{ border: '1px solid var(--ds-color-border-subtle)', borderRadius: 12, padding: 12, background: 'var(--ds-color-background-subtle)', cursor: 'pointer', font: 'inherit', textAlign: 'center' }}
+          >
+            <div style={{ fontSize: 26 }} aria-hidden>💬</div>
+            <div style={{ fontWeight: 600, marginTop: 6, fontSize: 14 }}>{t('menu.feedback')}</div>
           </button>
         </div>
       </Dialog>
@@ -159,6 +167,7 @@ export default function App() {
           {tab === 'scan' && <ScanPage items={items} storeId={user.storeId} onRefresh={refresh} showToast={showToast} />}
           {tab === 'fridge' && <FridgePage items={items} onRefresh={refresh} showToast={showToast} />}
           {tab === 'settings' && <SettingsPage user={user} onLogout={() => setUser(null)} showToast={showToast} onSaved={(u) => setUser(u)} />}
+          {tab === 'feedback' && <FeedbackPage user={user} showToast={showToast} />}
         </div>
       </main>
       <nav className="bottom-nav">
