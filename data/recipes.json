@@ -13,7 +13,7 @@
     "id": "gin-fizz",
     "nameKey": "recipe.gin-fizz",
     "glass": "glass.tall",
-    "instructions": "Rist gin, sitronsaft og sukkerlag godt med is. Sil i et glass, topping med sodavann og ett lett rørbeg.",
+    "instructions": "Rist gin, sitronsaft og sukkerlake godt med is. Sil i et glass, topping med sodavann og ett lett rørbeg.",
     "ingredients": [
       { "nameKey": "ing.gin", "keywords": ["gin"], "cl": 5, "optional": false },
       { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
@@ -82,7 +82,7 @@
     "id": "espresso-tonic",
     "nameKey": "recipe.espresso-tonic",
     "glass": "glass.rocks",
-    "instructions": "Hell en sterk espresso i et glass med mye is, topping med tonic. Sukkerlag om du liker det, og rør lett.",
+    "instructions": "Hell en sterk espresso i et glass med mye is, topping med tonic. Sukkerlake om du liker det, og rør lett.",
     "ingredients": [
       { "nameKey": "ing.espresso", "keywords": ["espresso", "kaffe"], "cl": 2, "optional": false },
       { "nameKey": "ing.tonic", "keywords": ["tonic"], "cl": 2, "optional": false },
@@ -106,7 +106,7 @@
     "id": "gloeg",
     "nameKey": "recipe.gloeg",
     "glass": "glass.mug",
-    "instructions": "Varm rødvin, portvin, appelsinjuice og sukkerlag sakte i en gryte — aldri i koke. Rom til hvert glass, og garnér med kanel og appelsinskiver.",
+    "instructions": "Varm rødvin, portvin, appelsinjuice og sukkerlake sakte i en gryte — aldri i koke. Rom til hvert glass, og garnér med kanel og appelsinskiver.",
     "ingredients": [
       { "nameKey": "ing.red-wine", "keywords": ["rødvin", "raudvin", "red wine"], "cl": 10, "optional": false },
       { "nameKey": "ing.port-wine", "keywords": ["portvin", "porto", "port wine"], "cl": 1.5, "optional": false },
@@ -130,7 +130,7 @@
     "id": "vodka-sour",
     "nameKey": "recipe.vodka-sour",
     "glass": "glass.rocks",
-    "instructions": "Rist vodka, sitronsaft og sukkerlag — gjerne med eggehvit for en kremaktig topp — godt med is. Sil i et glass med is.",
+    "instructions": "Rist vodka, sitronsaft og sukkerlake — gjerne med eggehvit for en kremaktig topp — godt med is. Sil i et glass med is.",
     "ingredients": [
       { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 5, "optional": false },
       { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
@@ -142,7 +142,7 @@
     "id": "whiskey-sour",
     "nameKey": "recipe.whiskey-sour",
     "glass": "glass.rocks",
-    "instructions": "Rist whisky, sitronsaft og sukkerlag godt med is. Sil i et glass med frisk is.",
+    "instructions": "Rist whisky, sitronsaft og sukkerlake godt med is. Sil i et glass med frisk is.",
     "ingredients": [
       { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 5, "optional": false },
       { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
@@ -153,7 +153,7 @@
     "id": "old-fashioned",
     "nameKey": "recipe.old-fashioned",
     "glass": "glass.rocks",
-    "instructions": "Sukkerlag og et par dråper bitters i et glass med is. Hell i whisky og rør sakte i et halvt minutt. Garnér med appelsinhud.",
+    "instructions": "Sukkerlake og et par dråper bitters i et glass med is. Hell i whisky og rør sakte i et halvt minutt. Garnér med appelsinhud.",
     "ingredients": [
       { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 5, "optional": false },
       { "nameKey": "ing.syrup-sugar", "keywords": ["sirup", "syrop", "sukker", "sukkerlag", "sukkerlake", "simple syrup"], "cl": 1.5, "optional": false },
@@ -203,7 +203,7 @@
     "id": "daiquiri",
     "nameKey": "recipe.daiquiri",
     "glass": "glass.cocktail",
-    "instructions": "Rist rom, limesaft og sukkerlag godt med is. Sil i et kaldt cocktailglass.",
+    "instructions": "Rist rom, limesaft og sukkerlake godt med is. Sil i et kaldt cocktailglass.",
     "ingredients": [
       { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 5, "optional": false },
       { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 2.5, "optional": false },
@@ -256,7 +256,7 @@
     "id": "mojito",
     "nameKey": "recipe.mojito",
     "glass": "glass.tall",
-    "instructions": "Slå mynte forsiktig sammen med limesaft og sukkerlag i glasset. Tilsett rom, fyll på med knust is og litt sodavann, rør, og topping med is og en myntegren.",
+    "instructions": "Slå mynte forsiktig sammen med limesaft og sukkerlake i glasset. Tilsett rom, fyll på med knust is og litt sodavann, rør, og topping med is og en myntegren.",
     "ingredients": [
       { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 4, "optional": false },
       { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 3, "optional": false },
