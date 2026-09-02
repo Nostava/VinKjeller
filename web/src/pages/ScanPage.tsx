@@ -603,7 +603,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
       )}
 
       {showCustom && (
-        <Dialog open closedby="any" onClose={() => setShowCustom(false)}>
+        <Dialog open onClose={() => setShowCustom(false)}>
           <CustomItemForm
             prefill={result && !result.product ? result.code : undefined}
             onSaved={async () => { await onRefresh(); setShowCustom(false); setResult(null); }}
@@ -613,7 +613,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
       )}
 
       {showLink && result && !result.product && (
-        <Dialog open closedby="any" onClose={() => setShowLink(false)}>
+        <Dialog open onClose={() => setShowLink(false)}>
           <LinkGtinDialog
             gtin={result.code}
             items={items}
@@ -627,7 +627,7 @@ export default function ScanPage({ items, storeId, onRefresh, showToast }: {
         </Dialog>
       )}
 
-      <Dialog open={helpOpen} closedby="any" onClose={() => setHelpOpen(false)}>
+      <Dialog open={helpOpen} onClose={() => setHelpOpen(false)}>
         <Heading level={2} data-size="lg">{t('scan.help_title')}</Heading>
         <ListOrdered className="mt">
           <ListItem>{t('scan.help_barcode')}</ListItem>
@@ -711,7 +711,7 @@ function TakeOutDialog({ bottles, onClose, onDone }: {
   const [id, setId] = useState(bottles[0]?.id ?? '');
   const [busy, setBusy] = useState(false);
   return (
-    <Dialog open closedby="any" onClose={onClose}>
+    <Dialog open onClose={onClose}>
       <Heading level={2} data-size="lg">{t('scan.take_out')}</Heading>
       <div className="mt" style={{ display: 'grid', gap: 8 }}>
         {bottles.map((b) => (

@@ -133,7 +133,7 @@ export default function App() {
       </header>
 
       {/* waffle menu: fridge + settings + feedback (kept out of the bottom nav on purpose) */}
-      <Dialog open={menuOpen} closedby="any" onClose={() => setMenuOpen(false)}>
+      <Dialog open={menuOpen} onClose={() => setMenuOpen(false)}>
         <Heading level={2} data-size="lg">{t('menu.title')}</Heading>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }} className="mt">
           <button

@@ -69,7 +69,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
     });
     const label = (it: CellarItem) => it.customName ?? it.product?.name ?? it.product?.longName ?? '';
     switch (sort) {
-      case 'shelf': return [...list].sort((a, b) => (a.boughtAt ?? a.addedAt).localeCompare(b.boughtAt ?? b.addedAt));
+      case 'shelf': return [...list].sort((a, b) => a.addedAt.localeCompare(b.addedAt));
       case 'name': return [...list].sort((a, b) => label(a).localeCompare(label(b), 'nb'));
       default: return [...list].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
     }
@@ -170,7 +170,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
         <Button variant="secondary" onClick={() => setShowAdd(true)}>＋ {t('cellar.add')}</Button>
       </div>
 
-      <Dialog open={showAdd} closedby="any" onClose={() => setShowAdd(false)}>
+      <Dialog open={showAdd} onClose={() => setShowAdd(false)}>
         <AddDialog
           onClose={() => setShowAdd(false)}
           onRefresh={onRefresh}
@@ -180,7 +180,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
       </Dialog>
 
       {activeCellar && (
-        <Dialog open={showPick} closedby="any" onClose={() => setShowPick(false)}>
+        <Dialog open={showPick} onClose={() => setShowPick(false)}>
           <CellarPicker
             cellars={cellars}
             cellarId={cellarId}
@@ -192,13 +192,13 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
       )}
 
       {activeCellar && (
-        <Dialog open={showShare} closedby="any" onClose={() => setShowShare(false)}>
+        <Dialog open={showShare} onClose={() => setShowShare(false)}>
           <ShareDialog cellarId={activeCellar.id} cellarName={activeCellar.name} showToast={showToast} />
         </Dialog>
       )}
 
       {selected && (
-        <Dialog open closedby="any" onClose={() => setSelected(null)}>
+        <Dialog open onClose={() => setSelected(null)}>
           <BottleDialog
             item={items.find((i) => i.id === selected.id) ?? selected}
             storeId={storeId}

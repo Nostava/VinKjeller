@@ -105,7 +105,7 @@ export default function SharePage({ token }: { token: string }) {
       </main>
 
       {sel && (
-        <Dialog open closedby="any" onClose={() => setSel(null)}>
+        <Dialog open onClose={() => setSel(null)}>
           <GuestDetail item={data.items.find((i) => i.id === sel.id) ?? sel} />
         </Dialog>
       )}

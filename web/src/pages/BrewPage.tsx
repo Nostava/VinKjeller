@@ -48,7 +48,7 @@ export default function BrewPage({ items, onRefresh, showToast }: {
         </div>
       )}
 
-      <Dialog open={showForm} closedby="any" onClose={() => { setShowForm(false); setEditing(null); }}>
+      <Dialog open={showForm} onClose={() => { setShowForm(false); setEditing(null); }}>
         <BrewForm
           key={editing?.id ?? 'new'}
           item={editing}
