@@ -84,10 +84,10 @@ for (const r of recipesSeed) {
   }
 }
 
-export const INGREDIENT_GROUPS: TagGroup[] = [
-  ...TAG_GROUPS,
-  {
-    labelKey: 'taggroup.mixers',
-    tags: [...RECIPE_ING_KEYS].filter((k) => !TAG_KEYS.has(k)).map((k) => ({ key: k, labelKey: 'ing.' + k })),
-  },
-];
+/** The "fridge stuff" group: everything recipes use that is not a bottle tag. */
+export const MIXER_GROUP: TagGroup = {
+  labelKey: 'taggroup.mixers',
+  tags: [...RECIPE_ING_KEYS].filter((k) => !TAG_KEYS.has(k)).map((k) => ({ key: k, labelKey: 'ing.' + k })),
+};
+
+export const INGREDIENT_GROUPS: TagGroup[] = [...TAG_GROUPS, MIXER_GROUP];

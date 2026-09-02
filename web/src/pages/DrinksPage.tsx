@@ -7,7 +7,7 @@ import { Input } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import type { CellarItem, Recipe, Round } from '../types';
 import { estimateEmpty, recipeStatus, TAG_KEYWORDS, type RecipeStatus } from '../lib/match';
-import { INGREDIENT_GROUPS } from '../lib/tags';
+import { MIXER_GROUP, TAG_GROUPS } from '../lib/tags';
 import { TagOptions } from '../components/ui';
 import nb from '../i18n/nb.json';
 
@@ -276,15 +276,20 @@ function NewRecipeDialog({ onClose, onSaved, showToast }: {
 }) {
   const { t } = useTranslation();
   const [name, setName] = useState('');
-  const [rows, setRows] = useState<{ key: string; customKw: string; cl: string; optional: boolean }[]>([
-    { key: 'gin', customKw: '', cl: '3', optional: false },
+  const [rows, setRows] = useState<{ kind: 'alc' | 'mixer'; key: string; customKw: string; cl: string; optional: boolean }[]>([
+    { kind: 'alc', key: 'gin', customKw: '', cl: '3', optional: false },
   ]);
   const [busy, setBusy] = useState(false);
 
-  function setRow(i: number, patch: Partial<{ key: string; customKw: string; cl: string; optional: boolean }>) {
+  function setRow(i: number, patch: Partial<{ kind: 'alc' | 'mixer'; key: string; customKw: string; cl: string; optional: boolean }>) {
     const next = [...rows];
     next[i] = { ...next[i], ...patch };
     setRows(next);
+  }
+
+  /** Two add-buttons: alcoholic types vs fridge stuff — shorter lists to scroll. */
+  function addRow(kind: 'alc' | 'mixer') {
+    setRows([...rows, { kind, key: kind === 'alc' ? 'gin' : 'tonic', customKw: '', cl: '2', optional: false }]);
   }
 
   async function save() {
@@ -329,7 +334,7 @@ function NewRecipeDialog({ onClose, onSaved, showToast }: {
       {rows.map((row, i) => (
         <div key={i} className="row" style={{ flexWrap: 'wrap' }}>
           <Select value={row.key} onChange={(e) => setRow(i, { key: e.target.value })} aria-label={t('drinks.ingredient')} style={{ flex: 1, minWidth: 150 }}>
-            <TagOptions groups={INGREDIENT_GROUPS} t={t} />
+            <TagOptions groups={row.kind === 'alc' ? TAG_GROUPS : [MIXER_GROUP]} t={t} />
             <option value="__custom__">…</option>
           </Select>
           {row.key === '__custom__' && (
@@ -356,9 +361,14 @@ function NewRecipeDialog({ onClose, onSaved, showToast }: {
           )}
         </div>
       ))}
-      <Button variant="secondary" onClick={() => setRows([...rows, { key: 'gin', customKw: '', cl: '2', optional: false }])}>
-        ＋ {t('drinks.add_ingredient')}
-      </Button>
+      <div className="row" style={{ gap: 8 }}>
+        <Button variant="secondary" onClick={() => addRow('alc')}>
+          ＋ {t('drinks.add_ing_alc')}
+        </Button>
+        <Button variant="secondary" onClick={() => addRow('mixer')}>
+          ＋ {t('drinks.add_ing_fridge')}
+        </Button>
+      </div>
       <div className="row">
         <Button variant="primary" loading={busy} onClick={save}>{t('drinks.save_recipe')}</Button>
         <Button variant="tertiary" onClick={onClose}>{t('common.cancel')}</Button>
