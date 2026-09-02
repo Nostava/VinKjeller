@@ -115,7 +115,7 @@ export default function DrinksPage({ items, recipes, rounds, onRefresh, showToas
       </Tabs>
 
       {making && (
-        <Dialog open onClose={() => setMaking(null)}>
+        <Dialog open closedby="any" onClose={() => setMaking(null)}>
           <MakeRoundDialog
             status={statuses.find((s) => s.status.recipe.id === making.id)?.status!}
             onClose={() => setMaking(null)}
@@ -130,7 +130,7 @@ export default function DrinksPage({ items, recipes, rounds, onRefresh, showToas
       )}
 
       {showNew && (
-        <Dialog open onClose={() => setShowNew(false)}>
+        <Dialog open closedby="any" onClose={() => setShowNew(false)}>
           <NewRecipeDialog
             onClose={() => setShowNew(false)}
             onSaved={async () => { await onRefresh(); setShowNew(false); }}

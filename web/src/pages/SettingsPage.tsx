@@ -147,7 +147,7 @@ export default function SettingsPage({ user, onLogout, showToast, onSaved }: {
       </Button>
 
       {confirmPurge && (
-        <Dialog open onClose={() => setConfirmPurge(false)}>
+        <Dialog open closedby="any" onClose={() => setConfirmPurge(false)}>
           <Heading level={2} data-size="lg">{t('settings.purge')}</Heading>
           <p className="mt muted">{t('settings.purge_confirm')}</p>
           <div className="mt row">
