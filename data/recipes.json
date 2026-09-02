@@ -17,7 +17,7 @@
     "ingredients": [
       { "nameKey": "ing.gin", "keywords": ["gin"], "cl": 5, "optional": false },
       { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
-      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 2, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["sirup", "syrop", "sukker", "sukkerlag", "sukkerlake", "simple syrup"], "cl": 2, "optional": false },
       { "nameKey": "ing.soda", "keywords": ["sodavann", "soda", "karbonert", "club soda", "kullsyre"], "cl": 50, "optional": false }
     ]
   },
@@ -86,7 +86,7 @@
     "ingredients": [
       { "nameKey": "ing.espresso", "keywords": ["espresso", "kaffe"], "cl": 2, "optional": false },
       { "nameKey": "ing.tonic", "keywords": ["tonic"], "cl": 2, "optional": false },
-      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 2, "optional": true }
+      { "nameKey": "ing.syrup-sugar", "keywords": ["sirup", "syrop", "sukker", "sukkerlag", "sukkerlake", "simple syrup"], "cl": 2, "optional": true }
     ]
   },
   {
@@ -111,7 +111,7 @@
       { "nameKey": "ing.red-wine", "keywords": ["rødvin", "raudvin", "red wine"], "cl": 10, "optional": false },
       { "nameKey": "ing.port-wine", "keywords": ["portvin", "porto", "port wine"], "cl": 1.5, "optional": false },
       { "nameKey": "ing.orange-juice", "keywords": ["appelsinjuice", "appelsinjuis", "appelsinmost", "orange juice"], "cl": 2, "optional": false },
-      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "honningsirup"], "cl": 2, "optional": true },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["sirup", "syrop", "sukker", "sukkerlag", "sukkerlake", "honningsirup"], "cl": 2, "optional": true },
       { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 1, "optional": true }
     ]
   },
@@ -134,7 +134,7 @@
     "ingredients": [
       { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 5, "optional": false },
       { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
-      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["sirup", "syrop", "sukker", "sukkerlag", "sukkerlake", "simple syrup"], "cl": 1.5, "optional": false },
       { "nameKey": "ing.egg-white", "keywords": ["egg"], "cl": 0, "optional": true }
     ]
   },
@@ -146,7 +146,7 @@
     "ingredients": [
       { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 5, "optional": false },
       { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
-      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 1.5, "optional": false }
+      { "nameKey": "ing.syrup-sugar", "keywords": ["sirup", "syrop", "sukker", "sukkerlag", "sukkerlake", "simple syrup"], "cl": 1.5, "optional": false }
     ]
   },
   {
@@ -156,7 +156,7 @@
     "instructions": "Sukkerlag og et par dråper bitters i et glass med is. Hell i whisky og rør sakte i et halvt minutt. Garnér med appelsinhud.",
     "ingredients": [
       { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 5, "optional": false },
-      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 1.5, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["sirup", "syrop", "sukker", "sukkerlag", "sukkerlake", "simple syrup"], "cl": 1.5, "optional": false },
       { "nameKey": "ing.bitters", "keywords": ["bitters", "bitter"], "cl": 0.1, "optional": false },
       { "nameKey": "ing.orange-garnish", "keywords": ["appelsin", "orange"], "cl": 0, "optional": true }
     ]
@@ -207,7 +207,7 @@
     "ingredients": [
       { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 5, "optional": false },
       { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 2.5, "optional": false },
-      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 1.5, "optional": false }
+      { "nameKey": "ing.syrup-sugar", "keywords": ["sirup", "syrop", "sukker", "sukkerlag", "sukkerlake", "simple syrup"], "cl": 1.5, "optional": false }
     ]
   },
   {
@@ -260,7 +260,7 @@
     "ingredients": [
       { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 4, "optional": false },
       { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 3, "optional": false },
-      { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 2, "optional": false },
+      { "nameKey": "ing.syrup-sugar", "keywords": ["sirup", "syrop", "sukker", "sukkerlag", "sukkerlake", "simple syrup"], "cl": 2, "optional": false },
       { "nameKey": "ing.soda", "keywords": ["sodavann", "soda", "karbonert", "club soda", "kullsyre"], "cl": 50, "optional": false },
       { "nameKey": "ing.mint", "keywords": ["mynte", "mint"], "cl": 0, "optional": true }
     ]
