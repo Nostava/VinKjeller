@@ -3,6 +3,27 @@ import { useTranslation } from 'react-i18next';
 import { Button, Heading, Label, Input } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import type { CellarItem, Product } from '../types';
+import type { TagGroup } from '../lib/tags';
+
+/** Grouped + alphabetized <optgroup>s for the drink-type pickers — the
+ *  bottle tag picker and the recipe ingredient picker share this, so the
+ *  lists always look the same. */
+export function TagOptions({ groups, t }: { groups: TagGroup[]; t: (k: string) => string }) {
+  return (
+    <>
+      {groups.map((g) => (
+        <optgroup key={g.labelKey} label={t(g.labelKey)}>
+          {g.tags
+            .map((tag) => ({ tag, label: t(tag.labelKey) }))
+            .sort((a, b) => a.label.localeCompare(b.label, 'nb'))
+            .map(({ tag }) => (
+              <option key={tag.key} value={tag.key}>{t(tag.labelKey)}</option>
+            ))}
+        </optgroup>
+      ))}
+    </>
+  );
+}
 
 export function useDebounce<T>(value: T, ms = 350): T {
   const [v, setV] = useState(value);

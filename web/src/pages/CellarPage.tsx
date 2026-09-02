@@ -9,7 +9,7 @@ import { api } from '../api';
 import type { Cellar, CellarItem, Product } from '../types';
 import { TAG_GROUPS, TAG_KEYS } from '../lib/tags';
 import { tagLabel } from '../lib/match';
-import { BottleThumb, CustomItemForm, ProductFacts, StockLine, imageUrlFromSet, useDebounce } from '../components/ui';
+import { BottleThumb, CustomItemForm, ProductFacts, StockLine, TagOptions, imageUrlFromSet, useDebounce } from '../components/ui';
 
 type SortKey = 'recent' | 'added' | 'shelf' | 'name';
 
@@ -477,16 +477,7 @@ function BottleDialog({ item, storeId, onClose, onChanged, onTakenOut }: {
                 // visible so it doesn't silently disappear from the select
                 <option value={item.tag}>{tagLabel(item.tag, t)}</option>
               )}
-              {TAG_GROUPS.map((g) => (
-                <optgroup key={g.labelKey} label={t(g.labelKey)}>
-                  {g.tags
-                    .map((tag) => ({ tag, label: t(tag.labelKey) }))
-                    .sort((a, b) => a.label.localeCompare(b.label, 'nb'))
-                    .map(({ tag }) => (
-                      <option key={tag.key} value={tag.key}>{t(tag.labelKey)}</option>
-                    ))}
-                </optgroup>
-              ))}
+              <TagOptions groups={TAG_GROUPS} t={t} />
             </Select>
             {tagBusy && <Spinner aria-label={t('common.loading')} />}
           </span>

@@ -1,3 +1,5 @@
+import recipesSeed from '../../../data/recipes.json';
+
 // Curated standard drink types for the tag picker (BottleDialog). The old
 // picker listed every ingredient key from recipes.json — brands (Cointreau,
 // Fernet) and fridge stuff (juice, soda) included. What users want is
@@ -69,3 +71,23 @@ export const TAG_KEYWORD_EXTRAS: Record<string, string[]> = Object.fromEntries(
     .filter((t) => t.keywords)
     .map((t) => [t.key, t.keywords as string[]]),
 );
+
+// ---------- recipe ingredient picker ----------
+// Creating a drink (recipe) uses the SAME groups as the tag picker, plus one
+// final group with the non-alcoholic/mixing ingredients that recipes need but
+// are never bottle tags (tonic, juice, syrup, garnish, …). Derived from
+// recipes.json so a new seeded ingredient shows up automatically.
+const RECIPE_ING_KEYS = new Set<string>();
+for (const r of recipesSeed) {
+  for (const i of r.ingredients) {
+    if (i.nameKey.startsWith('ing.')) RECIPE_ING_KEYS.add(i.nameKey.slice(4));
+  }
+}
+
+export const INGREDIENT_GROUPS: TagGroup[] = [
+  ...TAG_GROUPS,
+  {
+    labelKey: 'taggroup.mixers',
+    tags: [...RECIPE_ING_KEYS].filter((k) => !TAG_KEYS.has(k)).map((k) => ({ key: k, labelKey: 'ing.' + k })),
+  },
+];

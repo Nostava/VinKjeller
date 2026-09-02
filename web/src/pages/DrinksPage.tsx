@@ -6,7 +6,9 @@ import {
 import { Input } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import type { CellarItem, Recipe, Round } from '../types';
-import { estimateEmpty, recipeStatus, type RecipeStatus } from '../lib/match';
+import { estimateEmpty, recipeStatus, TAG_KEYWORDS, type RecipeStatus } from '../lib/match';
+import { INGREDIENT_GROUPS } from '../lib/tags';
+import { TagOptions } from '../components/ui';
 import nb from '../i18n/nb.json';
 
 export default function DrinksPage({ items, recipes, rounds, onRefresh, showToast }: {
@@ -273,10 +275,9 @@ function NewRecipeDialog({ onClose, onSaved, showToast }: {
   showToast: (m: string) => void;
 }) {
   const { t } = useTranslation();
-  const ingKeys = Object.keys(nb.ing);
   const [name, setName] = useState('');
   const [rows, setRows] = useState<{ key: string; customKw: string; cl: string; optional: boolean }[]>([
-    { key: ingKeys[0], customKw: '', cl: '3', optional: false },
+    { key: 'gin', customKw: '', cl: '3', optional: false },
   ]);
   const [busy, setBusy] = useState(false);
 
@@ -299,10 +300,13 @@ function NewRecipeDialog({ onClose, onSaved, showToast }: {
             const kws = row.customKw.split(',').map((k) => k.trim()).filter(Boolean);
             return { nameKey: kws[0] ?? 'custom', keywords: kws, cl: Number(row.cl) || 0, optional: row.optional };
           }
-          const label = (nb.ing as Record<string, string>)[row.key];
+          // match like the seeded recipes: the type's real keywords, not the
+          // display label ("Brandy (cognac)" would never match a bottle)
+          const keywords = TAG_KEYWORDS[row.key]
+            ?? [((nb.ing as Record<string, string>)[row.key] ?? row.key).toLowerCase()];
           return {
             nameKey: 'ing.' + row.key,
-            keywords: [label.toLowerCase()],
+            keywords,
             cl: Number(row.cl) || 0,
             optional: row.optional,
           };
@@ -325,9 +329,7 @@ function NewRecipeDialog({ onClose, onSaved, showToast }: {
       {rows.map((row, i) => (
         <div key={i} className="row" style={{ flexWrap: 'wrap' }}>
           <Select value={row.key} onChange={(e) => setRow(i, { key: e.target.value })} aria-label={t('drinks.ingredient')} style={{ flex: 1, minWidth: 150 }}>
-            {ingKeys.map((k) => (
-              <option key={k} value={k}>{(nb.ing as Record<string, string>)[k]}</option>
-            ))}
+            <TagOptions groups={INGREDIENT_GROUPS} t={t} />
             <option value="__custom__">…</option>
           </Select>
           {row.key === '__custom__' && (
@@ -354,7 +356,7 @@ function NewRecipeDialog({ onClose, onSaved, showToast }: {
           )}
         </div>
       ))}
-      <Button variant="secondary" onClick={() => setRows([...rows, { key: ingKeys[0], customKw: '', cl: '2', optional: false }])}>
+      <Button variant="secondary" onClick={() => setRows([...rows, { key: 'gin', customKw: '', cl: '2', optional: false }])}>
         ＋ {t('drinks.add_ingredient')}
       </Button>
       <div className="row">

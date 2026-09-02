@@ -5,7 +5,7 @@ import { TAG_KEYWORD_EXTRAS } from './tags';
 /** tag (ingredient key) → every keyword it has ever been seeded with.
  *  Lets a tagged bottle match an ingredient even when its name contains
  *  none of the keywords (Grey Goose → 'vodka'). */
-const TAG_KEYWORDS: Record<string, string[]> = (() => {
+export const TAG_KEYWORDS: Record<string, string[]> = (() => {
   const m = new Map<string, string[]>();
   for (const r of recipesSeed) {
     for (const i of r.ingredients) {
