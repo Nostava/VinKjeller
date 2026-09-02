@@ -85,8 +85,10 @@ export const api = {
     req<{ items: { vmProductId: string; name: string | null; imageUrls: string | null }[]; mode: string }>('/api/products/search?q=' + encodeURIComponent(q)),
 
   recipes: () => req<{ items: Recipe[] }>('/api/me/recipes'),
-  addRecipe: (r: { nameKey: string; glass: string | null; image: string | null; ingredients: { nameKey: string; keywords: string[]; cl: number; optional?: boolean }[] }) =>
+  addRecipe: (r: { nameKey: string; glass: string | null; image: string | null; instructions: string | null; ingredients: { nameKey: string; keywords: string[]; cl: number; optional?: boolean }[] }) =>
     req<{ id: string }>('/api/me/recipes', { method: 'POST', body: JSON.stringify(r) }),
+  updateRecipe: (id: string, p: { nameKey: string; instructions: string | null; ingredients: { nameKey: string; keywords: string[]; cl: number; optional?: boolean }[] }) =>
+    req<{ ok: boolean }>(`/api/me/recipes/${id}`, { method: 'PATCH', body: JSON.stringify(p) }),
   deleteRecipe: (id: string) => req<{ ok: boolean }>(`/api/me/recipes/${id}`, { method: 'DELETE' }),
   setFavorite: (id: string, favorite: boolean) =>
     req<{ ok: boolean }>(`/api/me/recipes/${id}`, { method: 'PATCH', body: JSON.stringify({ favorite: favorite ? 1 : 0 }) }),

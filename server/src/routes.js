@@ -457,14 +457,14 @@ export function registerRoutes(app) {
     const b = req.body ?? {};
     if (!b.nameKey || !Array.isArray(b.ingredients) || !b.ingredients.length) return reply.code(400).send({ error: 'bad_request' });
     const id = uid();
-    recipesDb.create.run(id, u.id, String(b.nameKey).slice(0, 120), b.glass ? String(b.glass).slice(0, 60) : null, b.image ? String(b.image).slice(0, 300) : null, JSON.stringify(b.ingredients));
+    recipesDb.create.run(id, u.id, String(b.nameKey).slice(0, 120), b.glass ? String(b.glass).slice(0, 60) : null, b.image ? String(b.image).slice(0, 300) : null, JSON.stringify(b.ingredients), b.instructions ? String(b.instructions).slice(0, 2000) : null);
     reply.code(201).send({ id });
   });
 
   app.patch('/api/me/recipes/:id', async (req, reply) => {
     const u = requireUser(req, reply); if (!u) return;
     const b = req.body ?? {};
-    recipesDb.update.run(b.favorite !== undefined ? (b.favorite ? 1 : 0) : null, b.glass !== undefined ? String(b.glass).slice(0, 60) : null, req.params.id, u.id);
+    recipesDb.update(req.params.id, u.id, b);
     reply.send({ ok: true });
   });
 

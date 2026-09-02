@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import {
   Alert, Button, Dialog, Heading, Label, Radio, Select, Spinner, Tabs,
 } from '@digdir/designsystemet-react';
-import { Input } from '@digdir/designsystemet-react';
+import { Input, Textarea } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import type { CellarItem, Recipe, Round } from '../types';
 import { estimateEmpty, recipeStatus, TAG_KEYWORDS, type RecipeStatus } from '../lib/match';
-import { MIXER_GROUP, TAG_GROUPS } from '../lib/tags';
+import { MIXER_GROUP, TAG_GROUPS, TAG_KEYS } from '../lib/tags';
 import { TagOptions } from '../components/ui';
 import nb from '../i18n/nb.json';
 
@@ -22,6 +22,7 @@ export default function DrinksPage({ items, recipes, rounds, onRefresh, showToas
   const [active, setActive] = useState<'make' | 'missing' | 'mine'>('make');
   const [making, setMaking] = useState<Recipe | null>(null);
   const [showNew, setShowNew] = useState(false);
+  const [editing, setEditing] = useState<Recipe | null>(null);
   const [fav, setFav] = useState<Record<string, boolean>>({});
 
   const statuses = useMemo(
@@ -110,7 +111,7 @@ export default function DrinksPage({ items, recipes, rounds, onRefresh, showToas
           )}
           <div style={{ display: 'grid', gap: 12 }}>
             {statuses.filter((s) => s.status.recipe.userId).map(({ status, fav }) => (
-              <RecipeCard key={status.recipe.id} status={status} fav={fav} onMake={() => setMaking(status.recipe)} onFav={toggleFav} />
+              <RecipeCard key={status.recipe.id} status={status} fav={fav} onMake={() => setMaking(status.recipe)} onFav={toggleFav} onEdit={() => setEditing(status.recipe)} />
             ))}
           </div>
         </Tabs.Panel>
@@ -140,6 +141,17 @@ export default function DrinksPage({ items, recipes, rounds, onRefresh, showToas
           />
         </Dialog>
       )}
+
+      {editing && (
+        <Dialog open closedby="any" onClose={() => setEditing(null)}>
+          <NewRecipeDialog
+            recipe={editing}
+            onClose={() => setEditing(null)}
+            onSaved={async () => { await onRefresh(); setEditing(null); }}
+            showToast={showToast}
+          />
+        </Dialog>
+      )}
     </div>
   );
 
@@ -158,13 +170,15 @@ function consumedMap(rounds: Round[]) {
   return map;
 }
 
-function RecipeCard({ status, fav, onMake, onFav }: {
+function RecipeCard({ status, fav, onMake, onFav, onEdit }: {
   status: RecipeStatus;
   fav: boolean;
   onMake?: () => void;
   onFav: (r: Recipe) => void;
+  onEdit?: () => void;
 }) {
   const { t } = useTranslation();
+  const [showInstructions, setShowInstructions] = useState(false);
   const r = status.recipe;
   const name = r.nameKey.startsWith('recipe.') ? t(r.nameKey) : r.nameKey;
 
@@ -174,6 +188,16 @@ function RecipeCard({ status, fav, onMake, onFav }: {
         <Heading level={3} data-size="md">{name}</Heading>
         <span className="spacer" />
         {r.glass && <span className="muted">{t('drinks.glass')}: {t(r.glass)}</span>}
+        {onEdit && (
+          <Button
+            variant="tertiary"
+            aria-label={t('drinks.edit')}
+            onClick={onEdit}
+            style={{ padding: 4 }}
+          >
+            ✏️
+          </Button>
+        )}
         <Button
           variant="tertiary"
           aria-label="favoritt"
@@ -197,6 +221,21 @@ function RecipeCard({ status, fav, onMake, onFav }: {
           </div>
         ))}
       </div>
+      {r.instructions && (
+        <div className="mt">
+          <Button
+            variant="tertiary"
+            aria-expanded={showInstructions}
+            onClick={() => setShowInstructions(!showInstructions)}
+            style={{ justifyContent: 'flex-start', padding: '4px 8px' }}
+          >
+            {showInstructions ? '▾' : '▸'} {t('drinks.instructions')}
+          </Button>
+          {showInstructions && (
+            <p className="muted mt" style={{ whiteSpace: 'pre-wrap', marginBottom: 0 }}>{r.instructions}</p>
+          )}
+        </div>
+      )}
       {status.canMake && onMake && (
         <div className="mt">
           <Button variant="primary" onClick={onMake}>
@@ -269,19 +308,39 @@ function MakeRoundDialog({ status, onClose, onDone, showToast }: {
   );
 }
 
-function NewRecipeDialog({ onClose, onSaved, showToast }: {
+type Row = { kind: 'alc' | 'mixer'; key: string; customKw: string; cl: string; optional: boolean };
+
+/** Prefill rows when editing an existing recipe. */
+function initialRows(recipe?: Recipe): Row[] {
+  if (recipe?.ingredients.length) {
+    return recipe.ingredients.map((i) => {
+      const custom = !i.nameKey.startsWith('ing.');
+      const key = custom ? '__custom__' : i.nameKey.slice(4);
+      return {
+        kind: (custom || !TAG_KEYS.has(key)) ? 'mixer' : 'alc',
+        key,
+        customKw: custom ? i.keywords.join(', ') : '',
+        cl: String(i.cl),
+        optional: !!i.optional,
+      };
+    });
+  }
+  return [{ kind: 'alc', key: 'gin', customKw: '', cl: '3', optional: false }];
+}
+
+function NewRecipeDialog({ recipe, onClose, onSaved, showToast }: {
+  recipe?: Recipe;
   onClose: () => void;
   onSaved: () => void;
   showToast: (m: string) => void;
 }) {
   const { t } = useTranslation();
-  const [name, setName] = useState('');
-  const [rows, setRows] = useState<{ kind: 'alc' | 'mixer'; key: string; customKw: string; cl: string; optional: boolean }[]>([
-    { kind: 'alc', key: 'gin', customKw: '', cl: '3', optional: false },
-  ]);
+  const [name, setName] = useState(recipe?.nameKey ?? '');
+  const [instructions, setInstructions] = useState(recipe?.instructions ?? '');
+  const [rows, setRows] = useState<Row[]>(() => initialRows(recipe));
   const [busy, setBusy] = useState(false);
 
-  function setRow(i: number, patch: Partial<{ kind: 'alc' | 'mixer'; key: string; customKw: string; cl: string; optional: boolean }>) {
+  function setRow(i: number, patch: Partial<Row>) {
     const next = [...rows];
     next[i] = { ...next[i], ...patch };
     setRows(next);
@@ -296,27 +355,40 @@ function NewRecipeDialog({ onClose, onSaved, showToast }: {
     if (!name.trim() || rows.length === 0) return;
     setBusy(true);
     try {
-      await api.addRecipe({
-        nameKey: name.trim(),
-        glass: null,
-        image: null,
-        ingredients: rows.map((row) => {
-          if (row.key === '__custom__') {
-            const kws = row.customKw.split(',').map((k) => k.trim()).filter(Boolean);
-            return { nameKey: kws[0] ?? 'custom', keywords: kws, cl: Number(row.cl) || 0, optional: row.optional };
-          }
-          // match like the seeded recipes: the type's real keywords, not the
-          // display label ("Brandy (cognac)" would never match a bottle)
-          const keywords = TAG_KEYWORDS[row.key]
-            ?? [((nb.ing as Record<string, string>)[row.key] ?? row.key).toLowerCase()];
-          return {
-            nameKey: 'ing.' + row.key,
-            keywords,
-            cl: Number(row.cl) || 0,
-            optional: row.optional,
-          };
-        }),
+      const ingredients = rows.map((row) => {
+        if (row.key === '__custom__') {
+          const kws = row.customKw.split(',').map((k) => k.trim()).filter(Boolean);
+          return { nameKey: kws[0] ?? 'custom', keywords: kws, cl: Number(row.cl) || 0, optional: row.optional };
+        }
+        // match like the seeded recipes: the type's real keywords, not the
+        // display label ("Brandy (cognac)" would never match a bottle)
+        const keywords = TAG_KEYWORDS[row.key]
+          ?? [((nb.ing as Record<string, string>)[row.key] ?? row.key).toLowerCase()];
+        return {
+          nameKey: 'ing.' + row.key,
+          keywords,
+          cl: Number(row.cl) || 0,
+          optional: row.optional,
+        };
       });
+      const body = { nameKey: name.trim(), ingredients, instructions: instructions.trim() || null };
+      if (recipe) {
+        await api.updateRecipe(recipe.id, body);
+      } else {
+        await api.addRecipe({ ...body, glass: null, image: null });
+      }
+      onSaved();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : t('common.error'));
+      setBusy(false);
+    }
+  }
+
+  async function del() {
+    if (!recipe || !window.confirm(t('drinks.confirm_delete'))) return;
+    setBusy(true);
+    try {
+      await api.deleteRecipe(recipe.id);
       onSaved();
     } catch (e) {
       showToast(e instanceof Error ? e.message : t('common.error'));
@@ -326,10 +398,19 @@ function NewRecipeDialog({ onClose, onSaved, showToast }: {
 
   return (
     <div style={{ display: 'grid', gap: 12 }}>
-      <Heading level={2} data-size="lg">{t('drinks.new_recipe')}</Heading>
+      <Heading level={2} data-size="lg">{recipe ? t('drinks.edit_recipe') : t('drinks.new_recipe')}</Heading>
       <div>
         <Label htmlFor="nr-name">{t('drinks.recipe_name')}</Label>
         <Input id="nr-name" value={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div>
+        <Label htmlFor="nr-instructions">{t('drinks.instructions')}</Label>
+        <Textarea
+          id="nr-instructions"
+          value={instructions}
+          onChange={(e) => setInstructions(e.target.value)}
+          rows={3}
+        />
       </div>
       {rows.map((row, i) => (
         <div key={i} className="row" style={{ flexWrap: 'wrap' }}>
@@ -372,6 +453,11 @@ function NewRecipeDialog({ onClose, onSaved, showToast }: {
       <div className="row">
         <Button variant="primary" loading={busy} onClick={save}>{t('drinks.save_recipe')}</Button>
         <Button variant="tertiary" onClick={onClose}>{t('common.cancel')}</Button>
+        {recipe && (
+          <Button variant="tertiary" loading={busy} onClick={del} style={{ marginLeft: 'auto' }}>
+            🗑 {t('drinks.delete')}
+          </Button>
+        )}
       </div>
     </div>
   );

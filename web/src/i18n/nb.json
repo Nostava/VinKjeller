@@ -1,6 +1,6 @@
 {
   "app": { "name": "VinKjeller" },
-  "nav": { "cellar": "Kjeller", "brew": "Brygg", "drinks": "Drikk", "scan": "Skann", "settings": "Innstillinger" },
+  "nav": { "cellar": "Kjeller", "brew": "Brygg", "drinks": "Drink", "scan": "Skann", "settings": "Innstillinger" },
   "menu": { "title": "Mer", "fridge": "Kjøleskap", "settings": "Innstillinger", "feedback": "Tilbakemelding" },
   "feedback": {
     "title": "Tilbakemelding",
@@ -216,6 +216,11 @@
     "optional": "valgfri",
     "add_ing_alc": "Alkohol",
     "add_ing_fridge": "Kjøleskap",
+    "instructions": "Slik lager du den",
+    "edit": "Rediger",
+    "edit_recipe": "Rediger oppskrift",
+    "delete": "Slett",
+    "confirm_delete": "Slette oppskriften?",
     "save_recipe": "Lagre oppskrift",
     "est_title": "Estimert til tom",
     "est_days_one": "1 dag",

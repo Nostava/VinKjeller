@@ -103,6 +103,7 @@ export type Recipe = {
   nameKey: string;
   glass: string | null;
   image: string | null;
+  instructions: string | null;
   ingredients: Ingredient[];
   favorite: number;
   createdAt: string;

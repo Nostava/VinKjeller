@@ -119,6 +119,7 @@ CREATE TABLE IF NOT EXISTS recipes (
   nameKey TEXT NOT NULL,
   glass TEXT,
   image TEXT,
+  instructions TEXT,
   ingredients TEXT NOT NULL,
   favorite INTEGER NOT NULL DEFAULT 0,
   createdAt TEXT NOT NULL DEFAULT (datetime('now'))
@@ -182,6 +183,9 @@ function migrate() {
   // 0 = fridge item off (used up). Fridge items live in the same cellar so
   // guests and co-members see them, but they're toggles, not bottles.
   if (!cols.has('fridgeOn')) db.exec(`ALTER TABLE cellar_items ADD COLUMN fridgeOn INTEGER`);
+  // free-text recipe instructions ("slik lager du den") — user recipes only
+  const rcols = new Set(db.prepare(`PRAGMA table_info(recipes)`).all().map((r) => r.name));
+  if (!rcols.has('instructions')) db.exec(`ALTER TABLE recipes ADD COLUMN instructions TEXT`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_cellar_items_cellar ON cellar_items(cellarId, removedAt)`);
   // every user gets a home cellar; their existing items move there
   const insC = db.prepare(`INSERT INTO cellars (id,name,ownerUserId,createdAt) VALUES (?,?,?,?)`);
@@ -303,12 +307,24 @@ export const storesCache = {
 
 // ---------- recipes & rounds ----------
 export const recipesDb = {
-  seedUpsert: db.prepare(`INSERT INTO recipes (id,nameKey,glass,image,ingredients,favorite) VALUES (?,?,?,?,?,0)
+  seedUpsert: db.prepare(`INSERT INTO recipes (id,nameKey,glass,image,ingredients,instructions,favorite) VALUES (?,?,?,?,?,NULL,0)
     ON CONFLICT(nameKey) WHERE userId IS NULL DO NOTHING`),
   list: db.prepare(`SELECT * FROM recipes WHERE userId IS NULL OR userId = ? ORDER BY (userId IS NULL), favorite DESC, nameKey`),
   one: db.prepare(`SELECT * FROM recipes WHERE id = ?`),
-  create: db.prepare(`INSERT INTO recipes (id,userId,nameKey,glass,image,ingredients,favorite) VALUES (?,?,?,?,?,?,0)`),
-  update: db.prepare(`UPDATE recipes SET favorite = COALESCE(?,favorite), glass = COALESCE(?,glass) WHERE id = ? AND userId = ?`),
+  create: db.prepare(`INSERT INTO recipes (id,userId,nameKey,glass,image,ingredients,instructions,favorite) VALUES (?,?,?,?,?,?,?,0)`),
+  // dynamic so callers can set/keep/clear any subset of fields (COALESCE
+  // alone can't express "clear instructions")
+  update(id, userId, p) {
+    const sets = [];
+    const params = [];
+    if (p.favorite !== undefined) { sets.push('favorite = ?'); params.push(p.favorite ? 1 : 0); }
+    if (p.glass !== undefined) { sets.push('glass = ?'); params.push(p.glass ? String(p.glass).slice(0, 60) : null); }
+    if (p.instructions !== undefined) { sets.push('instructions = ?'); params.push(p.instructions ? String(p.instructions).slice(0, 2000) : null); }
+    if (p.nameKey !== undefined) { sets.push('nameKey = ?'); params.push(String(p.nameKey).slice(0, 120)); }
+    if (p.ingredients !== undefined) { sets.push('ingredients = ?'); params.push(JSON.stringify(p.ingredients)); }
+    if (!sets.length) return;
+    db.prepare(`UPDATE recipes SET ${sets.join(', ')} WHERE id = ? AND userId = ?`).run(...params, id, userId);
+  },
   remove: db.prepare(`DELETE FROM recipes WHERE id = ? AND userId = ?`),
 };
 
