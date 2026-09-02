@@ -332,10 +332,10 @@
     "fernet-coke": "Fernet & Coke",
     "whiskey-cider": "Whisky & cider",
     "mojito": "Mojito",
-    "aquavit-glass": "Akvavit"
+    "aquavit-glass": "Akevitt"
   },
   "taggroup": {
-    "spirits": "Brannvin",
+    "spirits": "Brennevin",
     "liqueur": "Likør",
     "wine": "Vin",
     "other": "Annat"
@@ -351,8 +351,8 @@
     "white-wine": "Hvitvin",
     "red-wine": "Raudvin",
     "orange-juice": "Appelsinjuice",
-    "cointreau": "Cointreau / apelsinlikør",
-    "brandy": "Brandy",
+    "cointreau": "Cointreau / appelsinlikør",
+    "brandy": "Brandy (cognac)",
     "port-wine": "Portvin",
     "vodka": "Vodka",
     "coffee-liqueur": "Kaffelikør",
@@ -362,7 +362,7 @@
     "lemon-juice": "Sitronjuice",
     "lime-juice": "Limejuice",
     "ginger-beer": "Ginger beer",
-    "rum": "Rum",
+    "rum": "Rom",
     "tequila": "Tequila",
     "cola": "Cola",
     "cranberry-juice": "Tranebærsaft",
@@ -375,9 +375,10 @@
     "whiskey": "Whisky",
     "cider": "Eplemost",
     "fernet": "Fernet",
-    "aquavit": "Akvavit",
+    "aquavit": "Akevitt",
     "amaretto": "Amaretto",
     "bitter": "Bitter (Campari, Aperol)",
+    "cream-liqueur": "Kremlikør (Baileys)",
     "hollandsk": "Hollandsk (Jägermeister)",
     "maraschino": "Maraschino",
     "sambuca": "Sambuca"

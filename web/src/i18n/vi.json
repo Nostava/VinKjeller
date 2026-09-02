@@ -348,7 +348,7 @@
     "red-wine": "Rượu vang đỏ",
     "orange-juice": "Nước cam",
     "cointreau": "Cointreau / rượu cam",
-    "brandy": "Brandy",
+    "brandy": "Brandy (cognac)",
     "port-wine": "Port",
     "vodka": "Vodka",
     "coffee-liqueur": "Liqueur cà phê",
@@ -374,6 +374,7 @@
     "aquavit": "Akvavit",
     "amaretto": "Amaretto",
     "bitter": "Bitter (Campari, Aperol)",
+    "cream-liqueur": "Rượu mùi kem (Baileys)",
     "hollandsk": "Hollandsk (Jägermeister)",
     "maraschino": "Maraschino",
     "sambuca": "Sambuca"

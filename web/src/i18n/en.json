@@ -352,7 +352,7 @@
     "red-wine": "Red wine",
     "orange-juice": "Orange juice",
     "cointreau": "Cointreau / orange liqueur",
-    "brandy": "Brandy",
+    "brandy": "Brandy (Cognac)",
     "port-wine": "Port",
     "vodka": "Vodka",
     "coffee-liqueur": "Coffee liqueur",
@@ -378,6 +378,7 @@
     "aquavit": "Aquavit",
     "amaretto": "Amaretto",
     "bitter": "Bitters (Campari, Aperol)",
+    "cream-liqueur": "Cream liqueur (Baileys)",
     "hollandsk": "Hollandsk (Jägermeister)",
     "maraschino": "Maraschino",
     "sambuca": "Sambuca"

@@ -36,6 +36,7 @@ export const TAG_GROUPS: TagGroup[] = [
       { key: 'bitter', labelKey: 'ing.bitter', keywords: ['campari', 'aperol'] },
       { key: 'coffee-liqueur', labelKey: 'ing.coffee-liqueur' },
       { key: 'cointreau', labelKey: 'ing.cointreau' },
+      { key: 'cream-liqueur', labelKey: 'ing.cream-liqueur', keywords: ['baileys', 'cream liqueur', 'kremlikør'] },
       { key: 'hollandsk', labelKey: 'ing.hollandsk', keywords: ['hollandsk', 'jägermeister', 'jaegermeister', 'korn'] },
       { key: 'maraschino', labelKey: 'ing.maraschino', keywords: ['maraschino'] },
       { key: 'sambuca', labelKey: 'ing.sambuca', keywords: ['sambuca', 'anis'] },
