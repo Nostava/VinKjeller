@@ -7,10 +7,11 @@ import {
 import { Input } from '@digdir/designsystemet-react';
 import { api } from '../api';
 import type { Cellar, CellarItem, Product } from '../types';
-import nb from '../i18n/nb.json';
+import { TAG_GROUPS, TAG_KEYS } from '../lib/tags';
+import { tagLabel } from '../lib/match';
 import { BottleThumb, CustomItemForm, ProductFacts, StockLine, imageUrlFromSet, useDebounce } from '../components/ui';
 
-type SortKey = 'recent' | 'shelf' | 'name';
+type SortKey = 'recent' | 'added' | 'shelf' | 'name';
 
 export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, onCellarsChanged, storeId, onRefresh, showToast, goScan }: {
   items: CellarItem[];
@@ -69,9 +70,12 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
     });
     const label = (it: CellarItem) => it.customName ?? it.product?.name ?? it.product?.longName ?? '';
     switch (sort) {
+      // 'recent' = most recently BOUGHT (falls back to addedAt)
+      case 'recent': return [...list].sort((a, b) => (b.boughtAt ?? b.addedAt).localeCompare(a.boughtAt ?? a.addedAt));
+      // 'added' = most recently added to the cellar
+      case 'added': return [...list].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
       case 'shelf': return [...list].sort((a, b) => (a.boughtAt ?? a.addedAt).localeCompare(b.boughtAt ?? b.addedAt));
       case 'name': return [...list].sort((a, b) => label(a).localeCompare(label(b), 'nb'));
-      default: return [...list].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
     }
   }, [bottles, filter, cat, country, sort]);
 
@@ -109,6 +113,7 @@ export default function CellarPage({ items, cellars, cellarId, onSwitchCellar, o
           />
           <Select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label={t('cellar.sort_recent')} style={{ width: 200 }}>
             <option value="recent">{t('cellar.sort_recent')}</option>
+            <option value="added">{t('cellar.sort_added')}</option>
             <option value="shelf">{t('cellar.sort_shelf')}</option>
             <option value="name">{t('cellar.sort_name')}</option>
           </Select>
@@ -464,8 +469,20 @@ function BottleDialog({ item, storeId, onClose, onChanged, onTakenOut }: {
               }}
             >
               <option value="">{t('cellar.tag_none')}</option>
-              {Object.keys(nb.ing).map((k) => (
-                <option key={k} value={k}>{t('ing.' + k)}</option>
+              {item.tag && !TAG_KEYS.has(item.tag) && (
+                // legacy tag from the old (raw ingredient) picker — keep it
+                // visible so it doesn't silently disappear from the select
+                <option value={item.tag}>{tagLabel(item.tag, t)}</option>
+              )}
+              {TAG_GROUPS.map((g) => (
+                <optgroup key={g.labelKey} label={t(g.labelKey)}>
+                  {g.tags
+                    .map((tag) => ({ tag, label: t(tag.labelKey) }))
+                    .sort((a, b) => a.label.localeCompare(b.label, 'nb'))
+                    .map(({ tag }) => (
+                      <option key={tag.key} value={tag.key}>{t(tag.labelKey)}</option>
+                    ))}
+                </optgroup>
               ))}
             </Select>
             {tagBusy && <Spinner aria-label={t('common.loading')} />}

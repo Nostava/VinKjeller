@@ -1,6 +1,6 @@
 {
   "app": { "name": "VinKjeller" },
-  "nav": { "cellar": "Kjeller", "brew": "Brygg", "drinks": "Drinker", "scan": "Skann", "settings": "Innstillinger" },
+  "nav": { "cellar": "Kjeller", "brew": "Brygg", "drinks": "Drikk", "scan": "Skann", "settings": "Innstillinger" },
   "menu": { "title": "Mer", "fridge": "Kjøleskap", "settings": "Innstillinger", "feedback": "Tilbakemelding" },
   "feedback": {
     "title": "Tilbakemelding",
@@ -39,10 +39,10 @@
   "fridge": {
     "title": "Kjøleskap",
     "hint": "Det som ikke står i flasker: saft, brus, vann, sukker. Slå av når det er brukt opp — så teller det ikke i drikkene.",
-    "add_ph": "F.eks. Appelsinjuis, Vann, Sukker…",
+    "add_ph": "F.eks. Appelsinjuice, Vann, Sukker…",
     "add": "Legg til",
     "empty": "Ingenting i kjøleskapet ennå. Legg til saft, brus, vann, sukker — så teller det som tilgjengelig i drikkene.",
-    "on": "På plass",
+    "on": "Tilgjengelig",
     "off": "Brukt opp",
     "dupe": "Ligger allerede i kjøleskapet",
     "toggle": "tilgjengelig"
@@ -73,11 +73,12 @@
     "other_cellar_one": "«{{name}}» ({{role}}) har 1 flaske",
     "other_cellar_other": "«{{name}}» ({{role}}) har {{count}} flasker",
     "add": "Legg til",
-    "filter_ph": "Filtrér flasker…",
+    "filter_ph": "Filtrer flasker…",
     "shelf": "På hyllen",
     "shelf_months_one": "1 måned",
     "shelf_months_other": "{{count}} måneder",
-    "sort_recent": "Nyest",
+    "sort_recent": "Nyeste",
+    "sort_added": "Nylig lagt til",
     "sort_shelf": "Lengst på hyllen",
     "sort_name": "Navn A–Å",
     "filter_category": "Kategori",
@@ -108,9 +109,9 @@
     "count_other": "{{count}} flasker"
   },
   "brew": {
-    "title": "Hjemmebryg",
-    "empty": "Ingen bryggsaker ennå. Lag din første!",
-    "add": "Ny brygg",
+    "title": "Hjemmebrygg",
+    "empty": "Ingen brygg ennå. Lag ditt første!",
+    "add": "Nytt brygg",
     "edit": "Rediger brygg",
     "name": "Navn",
     "style": "Type",
@@ -123,12 +124,12 @@
     "brew_date": "Bryggedato",
     "carbonation": "Karbonering",
     "carb_none": "—",
-    "carb_light": "Letta",
+    "carb_light": "Lett",
     "carb_medium": "Middels",
     "carb_full": "Full",
     "malt": "Malt",
     "hops": "Humle",
-    "yeast": "Gær",
+    "yeast": "Gjær",
     "note": "Merknad",
     "gravity": "Tetthet",
     "brewed": "Brygget",
@@ -142,7 +143,7 @@
     "country": "Land",
     "region": "Distrikt",
     "vintage": "Årgang",
-    "added": "Lagt inn",
+    "added": "Lagt til",
     "desc": "Beskrivelse",
     "se_vm": "Se hos Vinmonopolet",
     "no_data": "Ingen detaljer fra Vinmonopol ennå",
@@ -165,7 +166,7 @@
     "help": "Hjelp",
     "help_title": "Slik bruker du skanning",
     "help_barcode": "Skann strekkoden: hold flasken opp mot kameraet, så leter appen etter produktet. Er koden ny, får du tilbud om å lese etiketten (🏷️) eller søke etter navn.",
-    "help_label": "«Les etikett»: hold kameraet mot navnet på etiketten og ta bilde. Appen leser teksten lokalt på enheten og foreslår produkter — velg den som stemmer (↗ viser den på vinmonopolet.no). Klarer den det ikke, kan du «Prøv med den andre OCR-motoren».",
+    "help_label": "«Les etikett»: hold kameraet mot navnet på etiketten og ta bilde. Appen leser teksten lokalt på enheten og foreslår produkter — velg den som stemmer (↗ viser den på vinmonopolet.no). Klarer den det ikke, kan du prøve med den andre OCR-motoren.",
     "help_number": "Kan du ikke få til kameraet? Tast inn produktnummeret — det står i lenken til produktet på vinmonopolet.no (/p/<nummer>).",
     "help_remember": "«💾 Lagre strekkoden» knytter strekkoden til produktet. Deretter slår scann av samme flaske direkte opp — også uten nett og uten full Vinmonopol-tilgang.",
     "help_engines": "Etiketten leses av to lokale OCR-motorer: TrOCR (god på dekorative skrifttyper) og Tesseract (backup). Alt kjører på enheten — ingen bilder sendes til noen server. «Auto» (standard) bruker TrOCR hvis enheten støtter WebGPU. Den første etikettlesingen laster ned TrOCR-modellen (ca. 100 MB) som deretter caches på enheten. Du kan velge motor under Innstillinger.",
@@ -173,7 +174,7 @@
     "not_found": "Fant ikke produktet",
     "not_found_hint": "Legg den inn som egen vare, eller søk manuelt.",
     "gtin_unavailable": "Denne strekkoden er ikke lagret ennå",
-    "gtin_unavailable_hint": "Når produktet er funnet, trykk «💾 Lagre strekkoden» på det. Deretter virker scann av denne flasken direkte — uten API-kall.",
+    "gtin_unavailable_hint": "Når produktet er funnet, trykk «💾 Lagre strekkoden» på produktet. Deretter virker scann av denne flasken direkte — uten API-kall.",
     "search_name": "Søk etter navn",
     "review_hint": "Tegn en boks rundt teksten på etiketten — eller les hele bildet.",
     "read_region": "Les dette området",
@@ -238,7 +239,7 @@
   },
   "stock": {
     "pick_store": "Velg din butikk i innstillinger for å se lager",
-    "unavailable": "Lager i butikk krever full Vinmonopol-tilgang",
+    "unavailable": "Butikklager krever full Vinmonopol-tilgang",
     "at_store_one": "{{count}} stk hos {{store}}",
     "at_store_other": "{{count}} stk hos {{store}}",
     "none": "Ikke på lager hos {{store}}"
@@ -246,7 +247,7 @@
   "share": {
     "short": "Del",
     "title": "Del kjelleren",
-    "host_note": "Gestene ser flaskene kun-lesende — ingen konto kreves. Lenker kan revokeres når som helst og kan utløpe automatisk.",
+    "host_note": "Gestene ser flaskene kun lesende — ingen konto kreves. Lenker kan revokeres når som helst og kan utløpe automatisk.",
     "link": "Delt lenke",
     "copy_btn": "Kopier",
     "copied": "Kopiert",
@@ -256,7 +257,7 @@
     "exp_1d": "1 dag",
     "exp_3d": "3 dager",
     "exp_1w": "1 uke",
-    "exp_never": "Inntil revokert",
+    "exp_never": "Uten utløp",
     "create": "Generer lenke",
     "active": "Aktive lenker",
     "none": "Ingen aktive lenker",
@@ -293,7 +294,7 @@
     "purge_confirm": "Slette all cache av Vinmonopol-data? Dine egne flasker og oppskrifter beholdes.",
     "purge_done": "Slettet",
     "about": "Om",
-    "about_text": "VinKjeller er en personlig vinkjeller-app. Produktdata © Vinmonopolet. Ikke reklame — kjøp hos Vinmonopolet. Drikk med ansvar (18+).",
+    "about_text": "VinKjeller er en personlig vinkjeller-app. Produktdata © Vinmonopolet. Ingen reklame — kjøp hos Vinmonopolet. Drikk med ansvar (18+).",
     "version": "Versjon",
     "saved": "Lagret",
     "logout": "Logg ut"
@@ -333,6 +334,12 @@
     "mojito": "Mojito",
     "aquavit-glass": "Akvavit"
   },
+  "taggroup": {
+    "spirits": "Brannvin",
+    "liqueur": "Likør",
+    "wine": "Vin",
+    "other": "Annet"
+  },
   "ing": {
     "gin": "Gin",
     "tonic": "Tonic",
@@ -361,13 +368,18 @@
     "cranberry-juice": "Tranebærsaft",
     "grapefruit-soda": "Grapefruitsoda",
     "bitters": "Bitters",
-    "egg-white": "Egg (vit)",
+    "egg-white": "Eggehvit",
     "orange-garnish": "Appelsin (pynt)",
     "lemon-garnish": "Sitron (pynt)",
     "mint": "Mynte",
     "whiskey": "Whisky",
     "cider": "Eplemost",
     "fernet": "Fernet",
-    "aquavit": "Akvavit"
+    "aquavit": "Akvavit",
+    "amaretto": "Amaretto",
+    "bitter": "Bitter (Campari, Aperol)",
+    "hollandsk": "Hollandsk (Jägermeister)",
+    "maraschino": "Maraschino",
+    "sambuca": "Sambuca"
   }
 }

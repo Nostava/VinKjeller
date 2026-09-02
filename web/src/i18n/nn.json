@@ -1,6 +1,6 @@
 {
   "app": { "name": "VinKjeller" },
-  "nav": { "cellar": "Kjellar", "brew": "Brygg", "drinks": "Drinker", "scan": "Skann", "settings": "Innstillingar" },
+  "nav": { "cellar": "Kjellar", "brew": "Brygg", "drinks": "Drikk", "scan": "Skann", "settings": "Innstillingar" },
   "menu": { "title": "Meir", "fridge": "Kjøleskap", "settings": "Innstillingar", "feedback": "Tilbakemelding" },
   "feedback": {
     "title": "Tilbakemelding",
@@ -78,6 +78,7 @@
     "shelf_months_one": "1 månad",
     "shelf_months_other": "{{count}} månader",
     "sort_recent": "Nyast",
+    "sort_added": "Nyleg lagt til",
     "sort_shelf": "Lengst på hylla",
     "sort_name": "Namn A–Å",
     "filter_category": "Kategori",
@@ -333,6 +334,12 @@
     "mojito": "Mojito",
     "aquavit-glass": "Akvavit"
   },
+  "taggroup": {
+    "spirits": "Brannvin",
+    "liqueur": "Likør",
+    "wine": "Vin",
+    "other": "Annat"
+  },
   "ing": {
     "gin": "Gin",
     "tonic": "Tonic",
@@ -368,6 +375,11 @@
     "whiskey": "Whisky",
     "cider": "Eplemost",
     "fernet": "Fernet",
-    "aquavit": "Akvavit"
+    "aquavit": "Akvavit",
+    "amaretto": "Amaretto",
+    "bitter": "Bitter (Campari, Aperol)",
+    "hollandsk": "Hollandsk (Jägermeister)",
+    "maraschino": "Maraschino",
+    "sambuca": "Sambuca"
   }
 }

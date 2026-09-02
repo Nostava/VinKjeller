@@ -1,5 +1,6 @@
 import type { CellarItem, Ingredient, Recipe, Round } from '../types';
 import recipesSeed from '../../../data/recipes.json';
+import { TAG_KEYWORD_EXTRAS } from './tags';
 
 /** tag (ingredient key) → every keyword it has ever been seeded with.
  *  Lets a tagged bottle match an ingredient even when its name contains
@@ -14,6 +15,12 @@ const TAG_KEYWORDS: Record<string, string[]> = (() => {
       for (const kw of i.keywords ?? []) if (!arr.includes(kw)) arr.push(kw);
       m.set(key, arr);
     }
+  }
+  // standard types that are not recipe ingredients (amaretto, hollandsk, …)
+  for (const [key, kws] of Object.entries(TAG_KEYWORD_EXTRAS)) {
+    const arr = m.get(key) ?? [];
+    for (const kw of kws) if (!arr.includes(kw)) arr.push(kw);
+    m.set(key, arr);
   }
   return Object.fromEntries(m);
 })();

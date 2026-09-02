@@ -78,6 +78,7 @@
     "shelf_months_one": "1 month",
     "shelf_months_other": "{{count}} months",
     "sort_recent": "Newest",
+    "sort_added": "Recently added",
     "sort_shelf": "Longest on shelf",
     "sort_name": "Name A–Z",
     "filter_category": "Category",
@@ -333,6 +334,12 @@
     "mojito": "Mojito",
     "aquavit-glass": "Aquavit"
   },
+  "taggroup": {
+    "spirits": "Spirits",
+    "liqueur": "Liqueur",
+    "wine": "Wine",
+    "other": "Other"
+  },
   "ing": {
     "gin": "Gin",
     "tonic": "Tonic",
@@ -368,6 +375,11 @@
     "whiskey": "Whisky",
     "cider": "Cider",
     "fernet": "Fernet",
-    "aquavit": "Aquavit"
+    "aquavit": "Aquavit",
+    "amaretto": "Amaretto",
+    "bitter": "Bitters (Campari, Aperol)",
+    "hollandsk": "Hollandsk (Jägermeister)",
+    "maraschino": "Maraschino",
+    "sambuca": "Sambuca"
   }
 }

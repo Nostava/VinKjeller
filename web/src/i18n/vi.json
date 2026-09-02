@@ -77,6 +77,7 @@
     "shelf": "Trên kệ",
     "shelf_months_other": "{{count}} tháng",
     "sort_recent": "Mới nhất",
+    "sort_added": "Mới thêm",
     "sort_shelf": "Lâu nhất trên kệ",
     "sort_name": "Tên A–Z",
     "filter_category": "Danh mục",
@@ -329,6 +330,12 @@
     "mojito": "Mojito",
     "aquavit-glass": "Akvavit"
   },
+  "taggroup": {
+    "spirits": "Rượu mạnh",
+    "liqueur": "Rượu mùi",
+    "wine": "Rượu vang",
+    "other": "Khác"
+  },
   "ing": {
     "gin": "Gin",
     "tonic": "Tonic",
@@ -364,6 +371,11 @@
     "whiskey": "Whisky",
     "cider": "Rượu táo",
     "fernet": "Fernet",
-    "aquavit": "Akvavit"
+    "aquavit": "Akvavit",
+    "amaretto": "Amaretto",
+    "bitter": "Bitter (Campari, Aperol)",
+    "hollandsk": "Hollandsk (Jägermeister)",
+    "maraschino": "Maraschino",
+    "sambuca": "Sambuca"
   }
 }
