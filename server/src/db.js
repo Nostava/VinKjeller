@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
 import { uid as newId } from './auth.js';
+import seedRecipesJson from '../../data/recipes.json' with { type: 'json' };
 
 fs.mkdirSync(path.dirname(config.dbFile), { recursive: true });
 
@@ -186,6 +187,10 @@ function migrate() {
   // free-text recipe instructions ("slik lager du den") — user recipes only
   const rcols = new Set(db.prepare(`PRAGMA table_info(recipes)`).all().map((r) => r.name));
   if (!rcols.has('instructions')) db.exec(`ALTER TABLE recipes ADD COLUMN instructions TEXT`);
+  // seed recipes removed from data/recipes.json disappear from the DB
+  // (e.g. the plain akevitt glass — it's a shot, not a drink)
+  const seedNameKeys = seedRecipesJson.map((r) => r.nameKey);
+  db.prepare(`DELETE FROM recipes WHERE userId IS NULL AND nameKey NOT IN (${seedNameKeys.map(() => '?').join(', ')})`).run(...seedNameKeys);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_cellar_items_cellar ON cellar_items(cellarId, removedAt)`);
   // every user gets a home cellar; their existing items move there
   const insC = db.prepare(`INSERT INTO cellars (id,name,ownerUserId,createdAt) VALUES (?,?,?,?)`);
@@ -307,8 +312,10 @@ export const storesCache = {
 
 // ---------- recipes & rounds ----------
 export const recipesDb = {
-  seedUpsert: db.prepare(`INSERT INTO recipes (id,nameKey,glass,image,ingredients,instructions,favorite) VALUES (?,?,?,?,?,NULL,0)
-    ON CONFLICT(nameKey) WHERE userId IS NULL DO NOTHING`),
+  // DO UPDATE refreshes instructions from data/recipes.json on every
+  // login/registration (seed rows can't be edited by users)
+  seedUpsert: db.prepare(`INSERT INTO recipes (id,nameKey,glass,image,ingredients,instructions,favorite) VALUES (?,?,?,?,?,?,0)
+    ON CONFLICT(nameKey) WHERE userId IS NULL DO UPDATE SET instructions = excluded.instructions`),
   list: db.prepare(`SELECT * FROM recipes WHERE userId IS NULL OR userId = ? ORDER BY (userId IS NULL), favorite DESC, nameKey`),
   one: db.prepare(`SELECT * FROM recipes WHERE id = ?`),
   create: db.prepare(`INSERT INTO recipes (id,userId,nameKey,glass,image,ingredients,instructions,favorite) VALUES (?,?,?,?,?,?,?,0)`),

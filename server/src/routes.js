@@ -82,7 +82,7 @@ export function registerRoutes(app) {
     users.create.run(id, em, hashPassword(password), String(name).slice(0, 80), 'nb');
     ensureHomeCellar(users.byId.get(id));
     // seed recipes
-    for (const r of seedRecipes) recipesDb.seedUpsert.run(r.id, r.nameKey, r.glass ?? null, r.image ?? null, JSON.stringify(r.ingredients));
+    for (const r of seedRecipes) recipesDb.seedUpsert.run(r.id, r.nameKey, r.glass ?? null, r.image ?? null, JSON.stringify(r.ingredients), r.instructions ?? null);
     setSession(req, reply, id);
     reply.code(201).send({ id, email: em, name: String(name) });
   });
@@ -93,7 +93,7 @@ export function registerRoutes(app) {
     if (!u || !verifyPassword(String(password ?? ''), u.passHash)) {
       return reply.code(401).send({ error: 'bad_credentials' });
     }
-    for (const r of seedRecipes) recipesDb.seedUpsert.run(r.id, r.nameKey, r.glass ?? null, r.image ?? null, JSON.stringify(r.ingredients));
+    for (const r of seedRecipes) recipesDb.seedUpsert.run(r.id, r.nameKey, r.glass ?? null, r.image ?? null, JSON.stringify(r.ingredients), r.instructions ?? null);
     setSession(req, reply, u.id);
     reply.send({ id: u.id, email: u.email, name: u.name });
   });

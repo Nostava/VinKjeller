@@ -3,6 +3,7 @@
     "id": "gt",
     "nameKey": "recipe.gt",
     "glass": "glass.glass",
+    "instructions": "Fyll glasset med is, hell i tonicsoda og topping med gin. Vrid inn litt av en sitronsiv.",
     "ingredients": [
       { "nameKey": "ing.gin", "keywords": ["gin"], "cl": 5, "optional": false },
       { "nameKey": "ing.tonic", "keywords": ["tonic"], "cl": 20, "optional": false }
@@ -12,6 +13,7 @@
     "id": "gin-fizz",
     "nameKey": "recipe.gin-fizz",
     "glass": "glass.tall",
+    "instructions": "Rist gin, sitronsaft og sukkerlag godt med is. Sil i et glass, topping med sodavann og ett lett rørbeg.",
     "ingredients": [
       { "nameKey": "ing.gin", "keywords": ["gin"], "cl": 5, "optional": false },
       { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
@@ -23,6 +25,7 @@
     "id": "negroni",
     "nameKey": "recipe.negroni",
     "glass": "glass.rocks",
+    "instructions": "Bland gin, rød vermouth og Campari i et glass med is. Rør godt og garnér med appelsinhud.",
     "ingredients": [
       { "nameKey": "ing.gin", "keywords": ["gin"], "cl": 3, "optional": false },
       { "nameKey": "ing.sweet-vermouth", "keywords": ["rød vermouth", "sweet vermouth", "rosso", "vermouth rosso"], "cl": 3, "optional": false },
@@ -33,6 +36,7 @@
     "id": "negroni-sbagliato",
     "nameKey": "recipe.negroni-sbagliato",
     "glass": "glass.rocks",
+    "instructions": "Bland prosecco, rød vermouth og Campari i et glass med is. Rør forsiktig og garnér med appelsinhud.",
     "ingredients": [
       { "nameKey": "ing.prosecco", "keywords": ["prosecco", "munnvin", "frizzante", "skumvin"], "cl": 3, "optional": false },
       { "nameKey": "ing.sweet-vermouth", "keywords": ["rød vermouth", "sweet vermouth", "rosso", "vermouth rosso"], "cl": 3, "optional": false },
@@ -43,6 +47,7 @@
     "id": "spritz",
     "nameKey": "recipe.spritz",
     "glass": "glass.wine",
+    "instructions": "Fyll glasset med is, hell i Aperol, topping med prosecco og litt sodavann. Garnér med en appelsinskive.",
     "ingredients": [
       { "nameKey": "ing.prosecco", "keywords": ["prosecco", "munnvin", "frizzante", "skumvin"], "cl": 3, "optional": false },
       { "nameKey": "ing.aperol", "keywords": ["aperol"], "cl": 2, "optional": false },
@@ -54,6 +59,7 @@
     "id": "spritzer",
     "nameKey": "recipe.spritzer",
     "glass": "glass.wine",
+    "instructions": "Bland hvitvin, prosecco og sodavann i et glass med is. Garnér med sitron.",
     "ingredients": [
       { "nameKey": "ing.white-wine", "keywords": ["hvitvin", "white wine", "vinmo"], "cl": 5, "optional": false },
       { "nameKey": "ing.prosecco", "keywords": ["prosecco", "munnvin", "frizzante", "skumvin"], "cl": 2, "optional": false },
@@ -65,6 +71,7 @@
     "id": "espresso-martini",
     "nameKey": "recipe.espresso-martini",
     "glass": "glass.cocktail",
+    "instructions": "Rist vodka, kaffelikør og en sterk espresso kraftig med is. Sil i et kaldt cocktailglass.",
     "ingredients": [
       { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 3, "optional": false },
       { "nameKey": "ing.coffee-liqueur", "keywords": ["kaffelikør", "coffee liqueur", "kahlua"], "cl": 1.5, "optional": false },
@@ -75,6 +82,7 @@
     "id": "espresso-tonic",
     "nameKey": "recipe.espresso-tonic",
     "glass": "glass.rocks",
+    "instructions": "Hell en sterk espresso i et glass med mye is, topping med tonic. Sukkerlag om du liker det, og rør lett.",
     "ingredients": [
       { "nameKey": "ing.espresso", "keywords": ["espresso", "kaffe"], "cl": 2, "optional": false },
       { "nameKey": "ing.tonic", "keywords": ["tonic"], "cl": 2, "optional": false },
@@ -85,6 +93,7 @@
     "id": "sangria",
     "nameKey": "recipe.sangria",
     "glass": "glass.wine",
+    "instructions": "Bland rødvin, appelsinjuice og Cointreau — og kognak om du vil — i en kanne. Tilsett eplebiter, la det trekke i kjøleskapet og server med is.",
     "ingredients": [
       { "nameKey": "ing.red-wine", "keywords": ["rødvin", "raudvin", "red wine"], "cl": 8, "optional": false },
       { "nameKey": "ing.orange-juice", "keywords": ["appelsinjuice", "appelsinjuis", "appelsinmost", "orange juice"], "cl": 2, "optional": false },
@@ -97,6 +106,7 @@
     "id": "gloeg",
     "nameKey": "recipe.gloeg",
     "glass": "glass.mug",
+    "instructions": "Varm rødvin, portvin, appelsinjuice og sukkerlag sakte i en gryte — aldri i koke. Rom til hvert glass, og garnér med kanel og appelsinskiver.",
     "ingredients": [
       { "nameKey": "ing.red-wine", "keywords": ["rødvin", "raudvin", "red wine"], "cl": 10, "optional": false },
       { "nameKey": "ing.port-wine", "keywords": ["portvin", "porto", "port wine"], "cl": 1.5, "optional": false },
@@ -109,6 +119,7 @@
     "id": "mule",
     "nameKey": "recipe.mule",
     "glass": "glass.tall",
+    "instructions": "Fyll et glass med is, hell i vodka og limesaft og topping med ingefærøl. Garnér med lime.",
     "ingredients": [
       { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 5, "optional": false },
       { "nameKey": "ing.ginger-beer", "keywords": ["ginger beer", "gingerbeer", "ingefær"], "cl": 15, "optional": false },
@@ -119,6 +130,7 @@
     "id": "vodka-sour",
     "nameKey": "recipe.vodka-sour",
     "glass": "glass.rocks",
+    "instructions": "Rist vodka, sitronsaft og sukkerlag — gjerne med eggehvit for en kremaktig topp — godt med is. Sil i et glass med is.",
     "ingredients": [
       { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 5, "optional": false },
       { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
@@ -130,6 +142,7 @@
     "id": "whiskey-sour",
     "nameKey": "recipe.whiskey-sour",
     "glass": "glass.rocks",
+    "instructions": "Rist whisky, sitronsaft og sukkerlag godt med is. Sil i et glass med frisk is.",
     "ingredients": [
       { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 5, "optional": false },
       { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 2, "optional": false },
@@ -140,6 +153,7 @@
     "id": "old-fashioned",
     "nameKey": "recipe.old-fashioned",
     "glass": "glass.rocks",
+    "instructions": "Sukkerlag og et par dråper bitters i et glass med is. Hell i whisky og rør sakte i et halvt minutt. Garnér med appelsinhud.",
     "ingredients": [
       { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 5, "optional": false },
       { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 1.5, "optional": false },
@@ -151,6 +165,7 @@
     "id": "hot-toddy",
     "nameKey": "recipe.hot-toddy",
     "glass": "glass.mug",
+    "instructions": "Bland whisky, honning og sitronsaft med litt kokende vann i en kopp. Rør til honningen er løst.",
     "ingredients": [
       { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 4, "optional": false },
       { "nameKey": "ing.lemon-juice", "keywords": ["sitronjuice", "sitronjuis", "lemon juice", "sitronmost", "sitron"], "cl": 1.5, "optional": false },
@@ -161,6 +176,7 @@
     "id": "long-island",
     "nameKey": "recipe.long-island",
     "glass": "glass.tall",
+    "instructions": "Alle likører, sitronsaft og cola i et glass med is. Rør godt. Den slår hardt — drikk sakte.",
     "ingredients": [
       { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 1.5, "optional": false },
       { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 1.5, "optional": false },
@@ -175,6 +191,7 @@
     "id": "cosmopolitan",
     "nameKey": "recipe.cosmopolitan",
     "glass": "glass.cocktail",
+    "instructions": "Rist vodka, Cointreau, tranbærsaft og sitronsaft godt med is. Sil i et kaldt cocktailglass.",
     "ingredients": [
       { "nameKey": "ing.vodka", "keywords": ["vodka"], "cl": 3, "optional": false },
       { "nameKey": "ing.cointreau", "keywords": ["cointreau", "triple sec", "orange liqueur", "apelsinlikør"], "cl": 1.5, "optional": false },
@@ -186,6 +203,7 @@
     "id": "daiquiri",
     "nameKey": "recipe.daiquiri",
     "glass": "glass.cocktail",
+    "instructions": "Rist rom, limesaft og sukkerlag godt med is. Sil i et kaldt cocktailglass.",
     "ingredients": [
       { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 5, "optional": false },
       { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 2.5, "optional": false },
@@ -196,6 +214,7 @@
     "id": "margarita",
     "nameKey": "recipe.margarita",
     "glass": "glass.rocks",
+    "instructions": "Rist tequila, Cointreau og limesaft godt med is. Sil i et glass med is. Saltkant om du liker det.",
     "ingredients": [
       { "nameKey": "ing.tequila", "keywords": ["tequila", "tequilla"], "cl": 4, "optional": false },
       { "nameKey": "ing.cointreau", "keywords": ["cointreau", "triple sec", "orange liqueur", "apelsinlikør"], "cl": 1.5, "optional": false },
@@ -206,6 +225,7 @@
     "id": "paloma",
     "nameKey": "recipe.paloma",
     "glass": "glass.tall",
+    "instructions": "Fyll et glass med is, hell i tequila og limesaft og topping med grapefruitsoda. Rør lett.",
     "ingredients": [
       { "nameKey": "ing.tequila", "keywords": ["tequila", "tequilla"], "cl": 4, "optional": false },
       { "nameKey": "ing.grapefruit-soda", "keywords": ["grapefruit", "pomelo"], "cl": 10, "optional": false },
@@ -216,6 +236,7 @@
     "id": "fernet-coke",
     "nameKey": "recipe.fernet-coke",
     "glass": "glass.rocks",
+    "instructions": "Hell Fernet i et glass med is og topping med cola. Rør. Den åpner seg etter hvert — prøv.",
     "ingredients": [
       { "nameKey": "ing.fernet", "keywords": ["fernet"], "cl": 2.5, "optional": false },
       { "nameKey": "ing.cola", "keywords": ["cola", "coca", "pepsi"], "cl": 10, "optional": false }
@@ -225,6 +246,7 @@
     "id": "whiskey-cider",
     "nameKey": "recipe.whiskey-cider",
     "glass": "glass.mug",
+    "instructions": "Eplemost med is i et glass, topping med whisky. Enkel og god — drikk den kald.",
     "ingredients": [
       { "nameKey": "ing.whiskey", "keywords": ["whisky", "whiskey", "bourbon", "irsk"], "cl": 3, "optional": false },
       { "nameKey": "ing.cider", "keywords": ["eplemost", "cider", "eplevin"], "cl": 25, "optional": false }
@@ -234,20 +256,13 @@
     "id": "mojito",
     "nameKey": "recipe.mojito",
     "glass": "glass.tall",
+    "instructions": "Slå mynte forsiktig sammen med limesaft og sukkerlag i glasset. Tilsett rom, fyll på med knust is og litt sodavann, rør, og topping med is og en myntegren.",
     "ingredients": [
       { "nameKey": "ing.rum", "keywords": ["rom", "rum"], "cl": 4, "optional": false },
       { "nameKey": "ing.lime-juice", "keywords": ["limejuice", "limejuis", "lime juice", "lime"], "cl": 3, "optional": false },
       { "nameKey": "ing.syrup-sugar", "keywords": ["syrop", "sirup", "sukker", "sukkerlag", "simple syrup"], "cl": 2, "optional": false },
       { "nameKey": "ing.soda", "keywords": ["sodavann", "soda", "karbonert", "club soda", "kullsyre"], "cl": 50, "optional": false },
       { "nameKey": "ing.mint", "keywords": ["mynte", "mint"], "cl": 0, "optional": true }
-    ]
-  },
-  {
-    "id": "aquavit-glass",
-    "nameKey": "recipe.aquavit-glass",
-    "glass": "glass.shots",
-    "ingredients": [
-      { "nameKey": "ing.aquavit", "keywords": ["akvavit", "aquavit", "aquadente"], "cl": 4, "optional": false }
     ]
   }
 ]
