@@ -64,10 +64,19 @@ export const TAG_GROUPS: TagGroup[] = [
 /** All curated tag keys — used for the picker and for matching. */
 export const TAG_KEYS = new Set(TAG_GROUPS.flatMap((g) => g.tags.map((t) => t.key)));
 
-/** Matching keywords for tags that are NOT recipe ingredients (the rest are
+/** Fridge/mixer items that no seeded recipe uses yet, but that people keep
+ *  in the fridge and want as recipe ingredients (feedback 2026-09-02).
+ *  Fridge list only — they are not bottle tags. */
+const EXTRA_MIXERS: DrinkTag[] = [
+  { key: 'banana', labelKey: 'ing.banana', keywords: ['banana', 'banan', 'bananer'] },
+  { key: 'strawberry', labelKey: 'ing.strawberry', keywords: ['strawberry', 'strawberries', 'jordbær'] },
+  { key: 'coconut-milk', labelKey: 'ing.coconut-milk', keywords: ['coconut milk', 'kokosmelk'] },
+];
+
+/** Matching keywords for keys that are NOT recipe ingredients (the rest are
  *  seeded from recipes.json in match.ts). */
 export const TAG_KEYWORD_EXTRAS: Record<string, string[]> = Object.fromEntries(
-  TAG_GROUPS.flatMap((g) => g.tags)
+  [...TAG_GROUPS.flatMap((g) => g.tags), ...EXTRA_MIXERS]
     .filter((t) => t.keywords)
     .map((t) => [t.key, t.keywords as string[]]),
 );
@@ -84,10 +93,14 @@ for (const r of recipesSeed) {
   }
 }
 
-/** The "fridge stuff" group: everything recipes use that is not a bottle tag. */
+/** The "fridge stuff" group: everything recipes use that is not a bottle tag,
+ *  plus EXTRA_MIXERS. */
 export const MIXER_GROUP: TagGroup = {
   labelKey: 'taggroup.mixers',
-  tags: [...RECIPE_ING_KEYS].filter((k) => !TAG_KEYS.has(k)).map((k) => ({ key: k, labelKey: 'ing.' + k })),
+  tags: [
+    ...[...RECIPE_ING_KEYS].filter((k) => !TAG_KEYS.has(k)).map((k) => ({ key: k, labelKey: 'ing.' + k })),
+    ...EXTRA_MIXERS,
+  ],
 };
 
 export const INGREDIENT_GROUPS: TagGroup[] = [...TAG_GROUPS, MIXER_GROUP];
