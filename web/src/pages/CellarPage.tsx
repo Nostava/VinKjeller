@@ -254,7 +254,10 @@ function BottleCard({ item, index, onClick }: { item: CellarItem; index: number;
       <BottleThumb item={item} />
       <strong style={{ fontSize: 14, lineHeight: 1.3 }}>{isBrew ? '🍺 ' : ''}{name}</strong>
       <span className="muted" style={{ fontSize: 12 }}>{sub}</span>
-      <div className="row" style={{ flexWrap: 'wrap', gap: 6 }}>
+      {/* anchored to the card bottom: grid rows stretch every card to the
+          tallest one, so the auto margin absorbs the name-length difference
+          and the shelf tag lines up across a row */}
+      <div className="row" style={{ flexWrap: 'wrap', gap: 6, marginTop: 'auto' }}>
         <Tag variant="outline">{t('cellar.shelf')} {t('cellar.shelf_months', { count: months })}</Tag>
       </div>
     </button>
